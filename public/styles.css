@@ -963,3 +963,45 @@ main,
     justify-content: flex-start;
   }
 }
+.limited-stock-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 14px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  color: #ffd86b;
+  background: rgba(245, 207, 120, 0.10);
+  border: 1px solid rgba(245, 207, 120, 0.35);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  box-shadow: 0 0 18px rgba(245, 207, 120, 0.10);
+}
+
+.stock-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ffd86b;
+  box-shadow: 0 0 12px rgba(245, 207, 120, 0.8);
+  animation: stockPulse 1.3s infinite;
+}
+
+@keyframes stockPulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  50% {
+    transform: scale(1.45);
+    opacity: 0.55;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
