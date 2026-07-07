@@ -385,6 +385,10 @@ function renderProducts() {
           <h3>${product.name}</h3>
           <p>${product.description}</p>
           <div class="product-price">${productPriceHTML(product)}</div>
+          <div class="limited-stock-badge">
+              <span class="stock-dot"></span>
+              Limited Stock
+          </div>
           ${phoneSelectorHTML(product.id)}
           <div class="card-actions">
             <button class="secondary-btn" data-preview="${product.id}">Preview</button>
