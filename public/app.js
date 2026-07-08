@@ -162,7 +162,7 @@ const products = [
     discountPercent: DISCOUNT_PERCENT,
     discountAmount: DISCOUNT_AMOUNT,
     tag: 'God',
-    image: 'assets/products/bhagwan-ram.png',
+    image: 'assets/products/bhagwan-ram.jpeg',
     description: 'Animated Bhagwan Ram Photo.'
   }
 ];
