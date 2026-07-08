@@ -434,3 +434,26 @@ app.use((error, _req, res, _next) => {
 app.listen(PORT, () => {
   console.log(`${STORE_NAME} running at http://localhost:${PORT}`);
 });
+app.get('/api/health', (_req, res) => {
+  res.json({ ok: true, service: STORE_NAME });
+});
+
+app.use((req, res) => {
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({ error: 'API route not found.' });
+  }
+
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+app.use((error, _req, res, _next) => {
+  const status = error.statusCode || 500;
+
+  res.status(status).json({
+    error: error.message || 'Something went wrong.'
+  });
+});
+
+app.listen(PORT, () => {
+  console.log(`${STORE_NAME} running at http://localhost:${PORT}`);
+});
