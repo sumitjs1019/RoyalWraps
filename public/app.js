@@ -340,7 +340,7 @@ function renderProducts() {
           <div class="product-price">${productPriceHTML(product)}</div>
           ${phoneSelectorHTML(product.id)}
           <div class="card-actions">
-            <button class="secondary-btn" data-preview="${product.id}">Preview</button>
+           <button class="secondary-btn" data-customize="${product.id}">Customize</button>
             <button class="primary-btn" data-add="${product.id}">Add to Cart</button>
           </div>
         </div>
@@ -636,7 +636,7 @@ previewModal.addEventListener('change', (event) => {
 
 productGrid.addEventListener('click', (event) => {
   const addButton = event.target.closest('[data-add]');
-  const previewButton = event.target.closest('[data-preview]');
+  const customizeButton = event.target.closest('[data-customize]');
 
   if (addButton) {
     const selection = getSelectionForProduct(addButton.dataset.add);
@@ -644,8 +644,10 @@ productGrid.addEventListener('click', (event) => {
     if (selection.brand && selection.model) openCart();
   }
 
-  if (previewButton) {
-    openPreview(previewButton.dataset.preview);
+  if (customizeButton) {
+    document.getElementById('customize')?.scrollIntoView({
+      behavior: 'smooth'
+    });
   }
 });
 
