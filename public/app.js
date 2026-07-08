@@ -155,15 +155,15 @@ const products = [
     description: 'Sapphire blue marble skin with premium gold cracks and dramatic studio styling.'
   },
   {
-    id: 'ayodhya-mandir',
-    name: 'Ayodhya Mandir Heritage Skin',
+    id: 'bhagwan-ram',
+    name: 'Bhagwan Ram Skin',
     price: SELLING_PRICE,
     originalPrice: ORIGINAL_PRICE,
     discountPercent: DISCOUNT_PERCENT,
     discountAmount: DISCOUNT_AMOUNT,
-    tag: 'Indian Heritage',
-    image: 'assets/products/ayodhya-mandir.png',
-    description: 'A warm royal temple artwork with golden detailing, mandala depth and premium devotional styling.'
+    tag: 'God',
+    image: 'assets/products/bhagwan-ram.png',
+    description: 'Animated Bhagwan Ram Photo.'
   }
 ];
 
