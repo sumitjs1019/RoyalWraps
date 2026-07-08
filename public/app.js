@@ -106,16 +106,17 @@ const phoneModels = {
 };
 
 const products = [
-  {
-    id: 'ayodhya-mandir',
-    name: 'Ayodhya Mandir Heritage Skin',
+
+   {
+    id: 'royal-midnight',
+    name: 'Royal Midnight Palace Skin',
     price: SELLING_PRICE,
     originalPrice: ORIGINAL_PRICE,
     discountPercent: DISCOUNT_PERCENT,
     discountAmount: DISCOUNT_AMOUNT,
-    tag: 'Indian Heritage',
-    image: 'assets/products/ayodhya-mandir.png',
-    description: 'A warm royal temple artwork with golden detailing, mandala depth and premium devotional styling.'
+    tag: 'Royal Edition',
+    image: 'assets/products/royal-midnight.png',
+    description: 'Midnight blue palace pattern with gold borders, floral details and luxury royal depth.'
   },
   {
     id: 'lotus-jaali',
@@ -206,15 +207,15 @@ const products = [
     description: 'Sapphire blue marble skin with premium gold cracks and dramatic studio styling.'
   },
   {
-    id: 'royal-midnight',
-    name: 'Royal Midnight Palace Skin',
+    id: 'ayodhya-mandir',
+    name: 'Ayodhya Mandir Heritage Skin',
     price: SELLING_PRICE,
     originalPrice: ORIGINAL_PRICE,
     discountPercent: DISCOUNT_PERCENT,
     discountAmount: DISCOUNT_AMOUNT,
-    tag: 'Royal Edition',
-    image: 'assets/products/royal-midnight.png',
-    description: 'Midnight blue palace pattern with gold borders, floral details and luxury royal depth.'
+    tag: 'Indian Heritage',
+    image: 'assets/products/ayodhya-mandir.png',
+    description: 'A warm royal temple artwork with golden detailing, mandala depth and premium devotional styling.'
   }
 ];
 
