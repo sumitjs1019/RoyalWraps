@@ -1,5 +1,7 @@
 const path = require('path');
 const crypto = require('crypto');
+const fs = require('fs');
+const multer = require('multer');
 const express = require('express');
 const cors = require('cors');
 const Razorpay = require('razorpay');
@@ -14,6 +16,56 @@ const STORE_MOBILE = process.env.STORE_MOBILE || '8000520058';
 app.use(cors());
 app.use(express.json({ limit: '100kb' }));
 app.use(express.static(path.join(__dirname, 'public')));
+
+const uploadDir = path.join(__dirname, 'uploads', 'customize');
+const dataDir = path.join(__dirname, 'data');
+const customizeOrdersFile = path.join(dataDir, 'customize-orders.json');
+
+fs.mkdirSync(uploadDir, { recursive: true });
+fs.mkdirSync(dataDir, { recursive: true });
+
+const customizeUpload = multer({
+  storage: multer.diskStorage({
+    destination: (_req, _file, cb) => {
+      cb(null, uploadDir);
+    },
+    filename: (_req, file, cb) => {
+      const ext = path.extname(file.originalname).toLowerCase();
+      const fileName = `custom_${Date.now()}_${crypto.randomBytes(6).toString('hex')}${ext}`;
+      cb(null, fileName);
+    }
+  }),
+  limits: {
+    fileSize: 8 * 1024 * 1024
+  },
+  fileFilter: (_req, file, cb) => {
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+
+    if (!allowedTypes.includes(file.mimetype)) {
+      return cb(new Error('Only JPG, PNG or WEBP images are allowed.'));
+    }
+
+    cb(null, true);
+  }
+});
+
+function readCustomizeOrders() {
+  if (!fs.existsSync(customizeOrdersFile)) return [];
+
+  try {
+    return JSON.parse(fs.readFileSync(customizeOrdersFile, 'utf8'));
+  } catch {
+    return [];
+  }
+}
+
+function saveCustomizeOrder(order) {
+  const orders = readCustomizeOrders();
+  orders.push(order);
+  fs.writeFileSync(customizeOrdersFile, JSON.stringify(orders, null, 2));
+}
+
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 const productCatalog = {
   'ayodhya-mandir': { name: 'Ayodhya Mandir Heritage Skin', price: 599 },
@@ -356,7 +408,62 @@ app.post('/api/verify-payment', (req, res, next) => {
     next(error);
   }
 });
+app.post('/api/customize-order', customizeUpload.single('designPhoto'), (req, res, next) => {
+  try {
+    const name = String(req.body.name || '').trim();
+    const mobile = String(req.body.mobile || '').replace(/\D/g, '').slice(0, 10);
+    const brand = String(req.body.mobileBrand || '').trim();
+    const model = String(req.body.mobileModel || '').trim();
+    const designNote = String(req.body.designNote || '').trim();
 
+    if (name.length < 2) {
+      const error = new Error('Please enter customer name.');
+      error.statusCode = 400;
+      throw error;
+    }
+
+    if (!/^\d{10}$/.test(mobile)) {
+      const error = new Error('Please enter exactly 10 digits mobile number.');
+      error.statusCode = 400;
+      throw error;
+    }
+
+    if (!brand || !model) {
+      const error = new Error('Please select mobile brand and model.');
+      error.statusCode = 400;
+      throw error;
+    }
+
+    if (!req.file) {
+      const error = new Error('Please upload your design photo.');
+      error.statusCode = 400;
+      throw error;
+    }
+
+    const order = {
+      id: `CUSTOM-${Date.now()}`,
+      createdAt: new Date().toISOString(),
+      name,
+      mobile,
+      brand,
+      model,
+      designNote,
+      originalFileName: req.file.originalname,
+      savedFileName: req.file.filename,
+      fileUrl: `/uploads/customize/${req.file.filename}`
+    };
+
+    saveCustomizeOrder(order);
+
+    res.json({
+      success: true,
+      message: 'Customize request saved successfully.',
+      orderId: order.id
+    });
+  } catch (error) {
+    next(error);
+  }
+});
 app.get('/api/health', (_req, res) => {
   res.json({ ok: true, service: STORE_NAME });
 });
