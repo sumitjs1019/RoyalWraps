@@ -410,30 +410,6 @@ app.post('/api/verify-payment', (req, res, next) => {
 });
 app.post('/api/customize-order', customizeUpload.single('designPhoto'), (req, res, next) => {
   try {
-    const name = String(req.body.name || '').trim();
-    const mobile = String(req.body.mobile || '').replace(/\D/g, '').slice(0, 10);
-    const brand = String(req.body.mobileBrand || '').trim();
-    const model = String(req.body.mobileModel || '').trim();
-    const designNote = String(req.body.designNote || '').trim();
-
-    if (name.length < 2) {
-      const error = new Error('Please enter customer name.');
-      error.statusCode = 400;
-      throw error;
-    }
-
-    if (!/^\d{10}$/.test(mobile)) {
-      const error = new Error('Please enter exactly 10 digits mobile number.');
-      error.statusCode = 400;
-      throw error;
-    }
-
-    if (!brand || !model) {
-      const error = new Error('Please select mobile brand and model.');
-      error.statusCode = 400;
-      throw error;
-    }
-
     if (!req.file) {
       const error = new Error('Please upload your design photo.');
       error.statusCode = 400;
@@ -443,11 +419,6 @@ app.post('/api/customize-order', customizeUpload.single('designPhoto'), (req, re
     const order = {
       id: `CUSTOM-${Date.now()}`,
       createdAt: new Date().toISOString(),
-      name,
-      mobile,
-      brand,
-      model,
-      designNote,
       originalFileName: req.file.originalname,
       savedFileName: req.file.filename,
       fileUrl: `/uploads/customize/${req.file.filename}`
@@ -457,31 +428,10 @@ app.post('/api/customize-order', customizeUpload.single('designPhoto'), (req, re
 
     res.json({
       success: true,
-      message: 'Customize request saved successfully.',
+      message: 'Photo uploaded successfully.',
       orderId: order.id
     });
   } catch (error) {
     next(error);
   }
-});
-app.get('/api/health', (_req, res) => {
-  res.json({ ok: true, service: STORE_NAME });
-});
-
-app.use((req, res) => {
-  if (req.path.startsWith('/api/')) {
-    return res.status(404).json({ error: 'API route not found.' });
-  }
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-app.use((error, _req, res, _next) => {
-  const status = error.statusCode || 500;
-  res.status(status).json({
-    error: error.message || 'Something went wrong.'
-  });
-});
-
-app.listen(PORT, () => {
-  console.log(`${STORE_NAME} running at http://localhost:${PORT}`);
 });
