@@ -409,29 +409,28 @@ app.post('/api/verify-payment', (req, res, next) => {
   }
 });
 app.post('/api/customize-order', customizeUpload.single('designPhoto'), (req, res, next) => {
-  try {
-    if (!req.file) {
-      const error = new Error('Please upload your design photo.');
-      error.statusCode = 400;
-      throw error;
-    }
+});
 
-    const order = {
-      id: `CUSTOM-${Date.now()}`,
-      createdAt: new Date().toISOString(),
-      originalFileName: req.file.originalname,
-      savedFileName: req.file.filename,
-      fileUrl: `/uploads/customize/${req.file.filename}`
-    };
+app.get('/api/health', (_req, res) => {
+  res.json({ ok: true, service: STORE_NAME });
+});
 
-    saveCustomizeOrder(order);
-
-    res.json({
-      success: true,
-      message: 'Photo uploaded successfully.',
-      orderId: order.id
-    });
-  } catch (error) {
-    next(error);
+app.use((req, res) => {
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({ error: 'API route not found.' });
   }
+
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+app.use((error, _req, res, _next) => {
+  const status = error.statusCode || 500;
+
+  res.status(status).json({
+    error: error.message || 'Something went wrong.'
+  });
+});
+
+app.listen(PORT, () => {
+  console.log(`${STORE_NAME} running at http://localhost:${PORT}`);
 });
