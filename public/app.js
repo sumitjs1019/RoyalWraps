@@ -724,6 +724,91 @@ document.addEventListener('keydown', (event) => {
     [previewModal, contactModal, refundModal].forEach(closeModal);
   }
 });
+const customizeForm = document.getElementById('customizeForm');
+const customizeBrand = document.getElementById('customizeBrand');
+const customizeModel = document.getElementById('customizeModel');
+const customizeOtherModelBox = document.getElementById('customizeOtherModelBox');
+const customizeOtherModel = document.getElementById('customizeOtherModel');
+const customizeStatus = document.getElementById('customizeStatus');
 
+function setupCustomizeForm() {
+  if (!customizeForm || !customizeBrand || !customizeModel) return;
+
+  customizeBrand.innerHTML = `<option value="">Mobile Brand</option>${brandOptionsHTML()}`;
+
+  customizeBrand.addEventListener('change', () => {
+    const brand = customizeBrand.value;
+    customizeModel.innerHTML = `<option value="">Mobile Model</option>${modelOptionsHTML(brand)}`;
+    customizeModel.disabled = !brand;
+    customizeModel.value = '';
+    toggleCustomizeOtherModel();
+  });
+
+  customizeModel.addEventListener('change', toggleCustomizeOtherModel);
+
+  const mobileInput = customizeForm.querySelector('input[name="mobile"]');
+
+  mobileInput.addEventListener('input', () => {
+    mobileInput.value = mobileInput.value.replace(/\D/g, '').slice(0, 10);
+  });
+
+  customizeForm.addEventListener('submit', handleCustomizeSubmit);
+}
+
+function toggleCustomizeOtherModel() {
+  const show = customizeModel.value === OTHER_MODEL_VALUE;
+
+  customizeOtherModelBox.classList.toggle('hidden', !show);
+  customizeOtherModel.required = show;
+
+  if (!show) {
+    customizeOtherModel.value = '';
+  }
+}
+
+async function handleCustomizeSubmit(event) {
+  event.preventDefault();
+
+  customizeStatus.textContent = 'Uploading your custom design...';
+  customizeStatus.className = 'customize-status';
+
+  try {
+    const formData = new FormData(customizeForm);
+
+    if (formData.get('mobileModel') === OTHER_MODEL_VALUE) {
+      const exactModel = customizeOtherModel.value.trim();
+
+      if (exactModel.length < 2) {
+        throw new Error('Please enter exact mobile model name.');
+      }
+
+      formData.set('mobileModel', `Other: ${exactModel}`);
+    }
+
+    const response = await fetch('/api/customize-order', {
+      method: 'POST',
+      body: formData
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Customize request failed.');
+    }
+
+    customizeStatus.textContent = `Request saved successfully. Order ID: ${data.orderId}`;
+    customizeStatus.classList.add('success');
+
+    customizeForm.reset();
+    customizeModel.disabled = true;
+    customizeModel.innerHTML = `<option value="">Mobile Model</option>`;
+    toggleCustomizeOtherModel();
+  } catch (error) {
+    customizeStatus.textContent = error.message;
+    customizeStatus.classList.add('error');
+  }
+}
+
+setupCustomizeForm();
 renderProducts();
 renderCart();
