@@ -747,11 +747,7 @@ async function handleCustomizeSubmit(event) {
       throw new Error(data.error || 'Photo upload failed.');
     }
 
-    customizeStatus.innerHTML = `
-  Photo uploaded successfully. ID: ${data.orderId}<br>
-  <a href="${data.fileUrl}" target="_blank" rel="noopener">Open uploaded photo</a>
-`;
-
+    customizeStatus.textContent = `Photo uploaded successfully. ID: ${data.orderId}`;
     customizeStatus.classList.add('success');
 
     customizeForm.reset();
