@@ -118,28 +118,8 @@ const products = [
     image: 'assets/products/royal-midnight.png',
     description: 'Midnight blue palace pattern with gold borders, floral details and luxury royal depth.'
   },
-  {
-    id: 'lotus-jaali',
-    name: 'Lotus Jaali Palace Skin',
-    price: SELLING_PRICE,
-    originalPrice: ORIGINAL_PRICE,
-    discountPercent: DISCOUNT_PERCENT,
-    discountAmount: DISCOUNT_AMOUNT,
-    tag: 'Elegant Luxury',
-    image: 'assets/products/lotus-jaali.png',
-    description: 'Cream palace jaali texture with teal lotus highlights for a clean and premium ethnic finish.'
-  },
-  {
-    id: 'cosmic-galaxy',
-    name: 'Cosmic Galaxy Vortex Skin',
-    price: SELLING_PRICE,
-    originalPrice: ORIGINAL_PRICE,
-    discountPercent: DISCOUNT_PERCENT,
-    discountAmount: DISCOUNT_AMOUNT,
-    tag: 'Space Edition',
-    image: 'assets/products/cosmic-galaxy.png',
-    description: 'Deep blue and purple cosmic vortex design for customers who like futuristic, eye-catching skins.'
-  },
+ 
+ 
   {
     id: 'obsidian-diamond',
     name: 'Obsidian Diamond Armor Skin',
@@ -151,17 +131,7 @@ const products = [
     image: 'assets/products/obsidian-diamond.png',
     description: 'Matte black geometric diamond panels with a technical, minimal and powerful look.'
   },
-  {
-    id: 'honeycomb-pro',
-    name: 'Honeycomb Copper Pro Skin',
-    price: SELLING_PRICE,
-    originalPrice: ORIGINAL_PRICE,
-    discountPercent: DISCOUNT_PERCENT,
-    discountAmount: DISCOUNT_AMOUNT,
-    tag: 'Performance',
-    image: 'assets/products/honeycomb-pro.png',
-    description: 'Black honeycomb texture with copper lines, made for a clean professional premium vibe.'
-  },
+
   {
     id: 'peacock-krishna',
     name: 'Peacock Jewel Krishna Skin',
@@ -172,28 +142,6 @@ const products = [
     tag: 'Royal Jewel',
     image: 'assets/products/peacock-krishna.png',
     description: 'Peacock feather jewel artwork with blue, green and gold detailing for a royal Indian statement.'
-  },
-  {
-    id: 'luxury-leather',
-    name: 'Luxury Quilted Leather Skin',
-    price: SELLING_PRICE,
-    originalPrice: ORIGINAL_PRICE,
-    discountPercent: DISCOUNT_PERCENT,
-    discountAmount: DISCOUNT_AMOUNT,
-    tag: 'Executive',
-    image: 'assets/products/luxury-leather.png',
-    description: 'Black quilted leather design with copper stitch detailing for an executive luxury feel.'
-  },
-  {
-    id: 'emerald-marble',
-    name: 'Emerald Marble Gold Skin',
-    price: SELLING_PRICE,
-    originalPrice: ORIGINAL_PRICE,
-    discountPercent: DISCOUNT_PERCENT,
-    discountAmount: DISCOUNT_AMOUNT,
-    tag: 'Marble Luxury',
-    image: 'assets/products/emerald-marble.png',
-    description: 'Dark emerald marble pattern with gold veins, designed for a rich high-end look.'
   },
   {
     id: 'sapphire-marble',
