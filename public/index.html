@@ -52,70 +52,24 @@
     <p>
       Apni photo, name, logo ya kisi bhi special design ke saath premium mobile skin customize karwao.
     </p>
+   <form class="customize-form" id="customizeForm" enctype="multipart/form-data">
+  <label>
+    Upload Your Photo / Design
+    <input
+      type="file"
+      name="designPhoto"
+      accept="image/png, image/jpeg, image/webp"
+      required
+    />
+  </label>
 
-    <form class="customize-form" id="customizeForm" enctype="multipart/form-data">
-      <label>
-        Full Name
-        <input type="text" name="name" placeholder="Enter your name" required minlength="2" />
-      </label>
+  <button type="submit" class="primary-btn full-width">
+    Submit Photo
+  </button>
 
-      <label>
-        Mobile Number
-        <input
-          type="tel"
-          name="mobile"
-          placeholder="10 digit mobile number"
-          required
-          maxlength="10"
-          pattern="[0-9]{10}"
-          inputmode="numeric"
-        />
-      </label>
-
-      <label>
-        Mobile Brand
-        <select name="mobileBrand" id="customizeBrand" required>
-          <option value="">Mobile Brand</option>
-        </select>
-      </label>
-
-      <label>
-        Mobile Model
-        <select name="mobileModel" id="customizeModel" required disabled>
-          <option value="">Mobile Model</option>
-        </select>
-      </label>
-
-      <label class="hidden" id="customizeOtherModelBox">
-        Exact Model Name
-        <input type="text" id="customizeOtherModel" placeholder="Enter exact model name" />
-      </label>
-
-      <label>
-        Upload Your Photo / Design
-        <input
-          type="file"
-          name="designPhoto"
-          accept="image/png, image/jpeg, image/webp"
-          required
-        />
-      </label>
-
-      <label>
-        Design Details
-        <textarea
-          name="designNote"
-          rows="4"
-          placeholder="Example: photo center me chahiye, naam add karna hai, black background chahiye"
-        ></textarea>
-      </label>
-
-      <button type="submit" class="primary-btn full-width">
-        Submit Customize Request
-      </button>
-
-      <p class="customize-status" id="customizeStatus"></p>
-    </form>
+  <p class="customize-status" id="customizeStatus"></p>
+</form>
+   
   </div>
 </section>
       <section class="why-section" id="why">
