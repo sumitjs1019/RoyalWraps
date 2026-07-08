@@ -163,7 +163,7 @@ const products = [
     discountAmount: DISCOUNT_AMOUNT,
     tag: 'God',
     image: 'assets/products/bhagwan-ram.jpeg',
-    description: 'Animated Bhagwan Ram Photo.'
+    description: 'Animated Bhagwan Ram Photo.                                                     '
   }
 ];
 
