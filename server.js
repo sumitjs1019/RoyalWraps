@@ -74,6 +74,7 @@ function saveCustomizeOrder(order) {
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 const productCatalog = {
+  'custom-mobile-skin': { name: 'Custom Photo Mobile Skin', price: 599 },
   'ayodhya-mandir': { name: 'Ayodhya Mandir Heritage Skin', price: 599 },
   'lotus-jaali': { name: 'Lotus Jaali Palace Skin', price: 599 },
   'cosmic-galaxy': { name: 'Cosmic Galaxy Vortex Skin', price: 599 },
@@ -89,6 +90,7 @@ const productCatalog = {
 const OTHER_MODEL_VALUE = '__other__';
 
 const phoneModels = {
+  Custom: ['Photo Uploaded'],
   Apple: [
     'iPhone 16 Pro Max', 'iPhone 16 Pro', 'iPhone 16 Plus', 'iPhone 16', 'iPhone 16e',
     'iPhone 15 Pro Max', 'iPhone 15 Pro', 'iPhone 15 Plus', 'iPhone 15',
