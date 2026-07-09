@@ -678,11 +678,33 @@ productGrid.addEventListener('click', (event) => {
     if (selection.brand && selection.model) openCart();
   }
 
-  if (customizeButton) {
-    document.getElementById('customize')?.scrollIntoView({
-      behavior: 'smooth'
-    });
+ if (customizeButton) {
+  const selection = getSelectionForProduct(customizeButton.dataset.customize);
+  const brand = String(selection.brand || '').trim();
+  const model = String(selection.model || '').trim();
+
+  if (!brand || !model) {
+    if (selection.selectedModel === OTHER_MODEL_VALUE && !selection.customModel) {
+      alert('Please enter the exact Mobile Model name.');
+    } else {
+      alert('Please select Mobile Brand and Mobile Model before customizing this skin.');
+    }
+    return;
   }
+
+  const validModels = phoneModels[brand] || [];
+  const customModelSelected =
+    model.startsWith('Other: ') && model.replace('Other: ', '').trim().length >= 2;
+
+  if (!validModels.includes(model) && !customModelSelected) {
+    alert('Please select a valid Mobile Model for the selected brand.');
+    return;
+  }
+
+  document.getElementById('customize')?.scrollIntoView({
+    behavior: 'smooth'
+  });
+}
 });
 
 cartItems.addEventListener('click', (event) => {
