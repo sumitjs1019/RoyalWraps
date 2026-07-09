@@ -747,7 +747,7 @@ async function handleCustomizeSubmit(event) {
       throw new Error(data.error || 'Photo upload failed.');
     }
 
-    customizeStatus.textContent = `Photo uploaded successfully. ID: ${data.orderId}`;
+    customizeStatus.textContent = `Photo uploaded successfully';
     customizeStatus.classList.add('success');
 
     customizeForm.reset();
