@@ -166,7 +166,17 @@ const products = [
     description: 'Animated Bhagwan Ram Premium 3D Printed Mobile skin.'
   }
 ];
-
+const CUSTOM_PRODUCT = {
+  id: 'custom-mobile-skin',
+  name: 'Custom Photo Mobile Skin',
+  price: SELLING_PRICE,
+  originalPrice: ORIGINAL_PRICE,
+  discountPercent: DISCOUNT_PERCENT,
+  discountAmount: DISCOUNT_AMOUNT,
+  tag: 'Custom Upload',
+  image: 'assets/royalwraps-logo-icon.png',
+  description: 'Customer uploaded photo/design custom mobile skin.'
+};
 const productGrid = document.getElementById('productGrid');
 const cartCount = document.getElementById('cartCount');
 const openCartBtn = document.getElementById('openCart');
@@ -218,11 +228,10 @@ function productPriceHTML(product) {
     </div>
   `;
 }
-
 function getProduct(id) {
+  if (id === CUSTOM_PRODUCT.id) return CUSTOM_PRODUCT;
   return products.find((product) => product.id === id);
 }
-
 function brandOptionsHTML() {
   return Object.keys(phoneModels)
     .map((brand) => `<option value="${escapeAttribute(brand)}">${brand}</option>`)
@@ -416,6 +425,28 @@ function addToCart(id, selection) {
   }
   saveCart();
   renderCart();
+}
+function addCustomUploadToCart() {
+  const id = CUSTOM_PRODUCT.id;
+  const brand = 'Custom';
+  const model = 'Photo Uploaded';
+
+  const existing = cart.find((item) => item.id === id && item.brand === brand && item.model === model);
+
+  if (existing) {
+    existing.qty = Math.min(existing.qty + 1, 10);
+  } else {
+    cart.push({
+      id,
+      brand,
+      model,
+      qty: 1
+    });
+  }
+
+  saveCart();
+  renderCart();
+  openCart();
 }
 
 function changeQuantity(key, change) {
@@ -748,7 +779,7 @@ async function handleCustomizeSubmit(event) {
     }
     customizeStatus.textContent = 'Photo uploaded successfully';
     customizeStatus.classList.add('success');
-
+    addCustomUploadToCart();
     customizeForm.reset();
   } catch (error) {
     customizeStatus.textContent = error.message;
