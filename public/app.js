@@ -202,6 +202,7 @@ const refundModal = document.getElementById('refundModal');
 
 let cart = JSON.parse(localStorage.getItem('royalwraps-cart') || '[]');
 let activePreviewId = null;
+let pendingCustomizeSelection = null;
 
 function formatCurrency(amount) {
   return new Intl.NumberFormat('en-IN', {
@@ -427,10 +428,10 @@ function addToCart(id, selection) {
   saveCart();
   renderCart();
 }
-function addCustomUploadToCart(imageUrl) {
+function addCustomUploadToCart(imageUrl, selection) {
   const id = CUSTOM_PRODUCT.id;
-  const brand = 'Custom';
-  const model = 'Photo Uploaded';
+  const brand = selection?.brand || '';
+  const model = selection?.model || '';
 
   const existing = cart.find((item) => item.id === id && item.brand === brand && item.model === model);
 
@@ -678,7 +679,7 @@ productGrid.addEventListener('click', (event) => {
     if (selection.brand && selection.model) openCart();
   }
 
- if (customizeButton) {
+if (customizeButton) {
   const selection = getSelectionForProduct(customizeButton.dataset.customize);
   const brand = String(selection.brand || '').trim();
   const model = String(selection.model || '').trim();
@@ -700,6 +701,12 @@ productGrid.addEventListener('click', (event) => {
     alert('Please select a valid Mobile Model for the selected brand.');
     return;
   }
+
+  pendingCustomizeSelection = {
+    brand,
+    model,
+    selectedProductId: customizeButton.dataset.customize
+  };
 
   document.getElementById('customize')?.scrollIntoView({
     behavior: 'smooth'
@@ -785,7 +792,16 @@ const customizeStatus = document.getElementById('customizeStatus');
 
 async function handleCustomizeSubmit(event) {
   event.preventDefault();
+if (!pendingCustomizeSelection?.brand || !pendingCustomizeSelection?.model) {
+  customizeStatus.textContent = 'Please select Mobile Brand and Mobile Model from any product before uploading photo.';
+  customizeStatus.className = 'customize-status error';
 
+  document.getElementById('products')?.scrollIntoView({
+    behavior: 'smooth'
+  });
+
+  return;
+}
   customizeStatus.textContent = 'Uploading your photo...';
   customizeStatus.className = 'customize-status';
 
@@ -804,7 +820,7 @@ async function handleCustomizeSubmit(event) {
     }
     customizeStatus.textContent = 'Photo uploaded successfully';
     customizeStatus.classList.add('success');
-    addCustomUploadToCart(data.imageUrl);
+    addCustomUploadToCart(data.imageUrl, pendingCustomizeSelection);
     customizeForm.reset();
   } catch (error) {
     customizeStatus.textContent = error.message;
