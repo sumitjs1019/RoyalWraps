@@ -1,4 +1,3 @@
-const { google } = require('googleapis');
 const path = require('path');
 const crypto = require('crypto');
 const fs = require('fs');
@@ -6,6 +5,7 @@ const multer = require('multer');
 const express = require('express');
 const cors = require('cors');
 const Razorpay = require('razorpay');
+const { v2: cloudinary } = require('cloudinary');
 require('dotenv').config();
 
 const app = express();
@@ -13,15 +13,10 @@ const PORT = Number(process.env.PORT || 3000);
 const STORE_NAME = process.env.STORE_NAME || 'RoyalWraps';
 const STORE_EMAIL = process.env.STORE_EMAIL || 'sumitsharma22112004@gmail.com';
 const STORE_MOBILE = process.env.STORE_MOBILE || '8000520058';
-const googleDriveAuth = new google.auth.JWT({
-  email: process.env.GOOGLE_CLIENT_EMAIL,
-  key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-  scopes: ['https://www.googleapis.com/auth/drive.file']
-});
-
-const googleDrive = google.drive({
-  version: 'v3',
-  auth: googleDriveAuth
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
 app.use(cors());
@@ -427,25 +422,15 @@ app.post('/api/customize-order', customizeUpload.single('designPhoto'), async (r
       throw error;
     }
 
-    if (!process.env.GOOGLE_CLIENT_EMAIL || !process.env.GOOGLE_PRIVATE_KEY || !process.env.GOOGLE_DRIVE_FOLDER_ID) {
-      const error = new Error('Google Drive upload is not configured.');
+    if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+      const error = new Error('Cloudinary upload is not configured.');
       error.statusCode = 500;
       throw error;
     }
 
-    const safeOriginalName = req.file.originalname.replace(/[^\w.\-]+/g, '_');
-    const driveFileName = `RoyalWrap_${Date.now()}_${safeOriginalName}`;
-
-    const driveResponse = await googleDrive.files.create({
-      requestBody: {
-        name: driveFileName,
-        parents: [process.env.GOOGLE_DRIVE_FOLDER_ID]
-      },
-      media: {
-        mimeType: req.file.mimetype,
-        body: fs.createReadStream(req.file.path)
-      },
-      fields: 'id, name, webViewLink'
+    const cloudinaryResult = await cloudinary.uploader.upload(req.file.path, {
+      folder: 'royalwrap-customize',
+      resource_type: 'image'
     });
 
     fs.unlink(req.file.path, () => {});
@@ -454,9 +439,8 @@ app.post('/api/customize-order', customizeUpload.single('designPhoto'), async (r
       id: `CUSTOM-${Date.now()}`,
       createdAt: new Date().toISOString(),
       originalFileName: req.file.originalname,
-      googleDriveFileId: driveResponse.data.id,
-      googleDriveFileName: driveResponse.data.name,
-      googleDriveLink: driveResponse.data.webViewLink
+      cloudinaryPublicId: cloudinaryResult.public_id,
+      cloudinaryUrl: cloudinaryResult.secure_url
     };
 
     saveCustomizeOrder(order);
