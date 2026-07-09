@@ -779,7 +779,7 @@ async function handleCustomizeSubmit(event) {
     }
     customizeStatus.textContent = 'Photo uploaded successfully';
     customizeStatus.classList.add('success');
-    addCustomUploadToCart();
+    addCustomUploadToCart(data.imageurl);
     customizeForm.reset();
   } catch (error) {
     customizeStatus.textContent = error.message;
