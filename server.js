@@ -1,3 +1,4 @@
+const { google } = require('googleapis');
 const path = require('path');
 const crypto = require('crypto');
 const fs = require('fs');
@@ -12,6 +13,16 @@ const PORT = Number(process.env.PORT || 3000);
 const STORE_NAME = process.env.STORE_NAME || 'RoyalWraps';
 const STORE_EMAIL = process.env.STORE_EMAIL || 'sumitsharma22112004@gmail.com';
 const STORE_MOBILE = process.env.STORE_MOBILE || '8000520058';
+const googleDriveAuth = new google.auth.JWT({
+  email: process.env.GOOGLE_CLIENT_EMAIL,
+  key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+  scopes: ['https://www.googleapis.com/auth/drive.file']
+});
+
+const googleDrive = google.drive({
+  version: 'v3',
+  auth: googleDriveAuth
+});
 
 app.use(cors());
 app.use(express.json({ limit: '100kb' }));
@@ -408,7 +419,7 @@ app.post('/api/verify-payment', (req, res, next) => {
     next(error);
   }
 });
-app.post('/api/customize-order', customizeUpload.single('designPhoto'), (req, res, next) => {
+app.post('/api/customize-order', customizeUpload.single('designPhoto'), async (req, res, next) => {
   try {
     if (!req.file) {
       const error = new Error('Please upload your design photo.');
@@ -416,12 +427,36 @@ app.post('/api/customize-order', customizeUpload.single('designPhoto'), (req, re
       throw error;
     }
 
+    if (!process.env.GOOGLE_CLIENT_EMAIL || !process.env.GOOGLE_PRIVATE_KEY || !process.env.GOOGLE_DRIVE_FOLDER_ID) {
+      const error = new Error('Google Drive upload is not configured.');
+      error.statusCode = 500;
+      throw error;
+    }
+
+    const safeOriginalName = req.file.originalname.replace(/[^\w.\-]+/g, '_');
+    const driveFileName = `RoyalWrap_${Date.now()}_${safeOriginalName}`;
+
+    const driveResponse = await googleDrive.files.create({
+      requestBody: {
+        name: driveFileName,
+        parents: [process.env.GOOGLE_DRIVE_FOLDER_ID]
+      },
+      media: {
+        mimeType: req.file.mimetype,
+        body: fs.createReadStream(req.file.path)
+      },
+      fields: 'id, name, webViewLink'
+    });
+
+    fs.unlink(req.file.path, () => {});
+
     const order = {
       id: `CUSTOM-${Date.now()}`,
       createdAt: new Date().toISOString(),
       originalFileName: req.file.originalname,
-      savedFileName: req.file.filename,
-      fileUrl: `/uploads/customize/${req.file.filename}`
+      googleDriveFileId: driveResponse.data.id,
+      googleDriveFileName: driveResponse.data.name,
+      googleDriveLink: driveResponse.data.webViewLink
     };
 
     saveCustomizeOrder(order);
@@ -432,6 +467,10 @@ app.post('/api/customize-order', customizeUpload.single('designPhoto'), (req, re
       orderId: order.id
     });
   } catch (error) {
+    if (req.file?.path) {
+      fs.unlink(req.file.path, () => {});
+    }
+
     next(error);
   }
 });
