@@ -203,6 +203,7 @@ const refundModal = document.getElementById('refundModal');
 let cart = JSON.parse(localStorage.getItem('royalwraps-cart') || '[]');
 let activePreviewId = null;
 let pendingCustomizeSelection = null;
+let returnToCustomizeAfterModelSelection = false;
 
 function formatCurrency(amount) {
   return new Intl.NumberFormat('en-IN', {
@@ -281,6 +282,38 @@ function getSelectionFromContainer(container) {
 }
 
 function getSelectionForProduct(productId) {
+  function maybeReturnToCustomizeAfterSelection(container) {
+  const selection = getSelectionFromContainer(container);
+  const brand = String(selection.brand || '').trim();
+  const model = String(selection.model || '').trim();
+
+  if (!brand || !model) return;
+
+  const validModels = phoneModels[brand] || [];
+  const customModelSelected =
+    model.startsWith('Other: ') && model.replace('Other: ', '').trim().length >= 2;
+
+  if (!validModels.includes(model) && !customModelSelected) return;
+
+  pendingCustomizeSelection = {
+    brand,
+    model,
+    selectedProductId: container?.dataset.product || ''
+  };
+
+  if (returnToCustomizeAfterModelSelection) {
+    returnToCustomizeAfterModelSelection = false;
+
+    document.getElementById('customize')?.scrollIntoView({
+      behavior: 'smooth'
+    });
+
+    if (customizeStatus) {
+      customizeStatus.textContent = 'Now upload your photo/design.';
+      customizeStatus.className = 'customize-status';
+    }
+  }
+}
   const container = productGrid.querySelector(`[data-selector-group="card"][data-product="${productId}"]`);
   return getSelectionFromContainer(container);
 }
@@ -658,8 +691,25 @@ async function handleCheckout(event) {
 productGrid.addEventListener('change', (event) => {
   const brandSelect = event.target.closest('.mobile-brand-select');
   const modelSelect = event.target.closest('.mobile-model-select');
+
   if (brandSelect) updateModelSelect(brandSelect);
   if (modelSelect) updateCustomModelField(modelSelect);
+
+  const selectorGroup = event.target.closest('.phone-selectors[data-selector-group="card"]');
+
+  if (selectorGroup) {
+    maybeReturnToCustomizeAfterSelection(selectorGroup);
+  }
+});
+productGrid.addEventListener('input', (event) => {
+  const customInput = event.target.closest('.custom-model-input');
+  if (!customInput) return;
+
+  const selectorGroup = customInput.closest('.phone-selectors[data-selector-group="card"]');
+
+  if (selectorGroup) {
+    maybeReturnToCustomizeAfterSelection(selectorGroup);
+  }
 });
 
 previewModal.addEventListener('change', (event) => {
@@ -793,6 +843,7 @@ const customizeStatus = document.getElementById('customizeStatus');
 async function handleCustomizeSubmit(event) {
   event.preventDefault();
 if (!pendingCustomizeSelection?.brand || !pendingCustomizeSelection?.model) {
+  returnToCustomizeAfterModelSelection = true;
   customizeStatus.textContent = 'Please select Mobile Brand and Mobile Model from any product before uploading photo.';
   customizeStatus.className = 'customize-status error';
 
