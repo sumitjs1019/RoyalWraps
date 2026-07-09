@@ -450,8 +450,10 @@ app.post('/api/customize-order', customizeUpload.single('designPhoto'), async (r
     res.json({
       success: true,
       message: 'Photo uploaded successfully.',
-      orderId: order.id
+      orderId: order.id,
+      imageUrl: cloudinaryResult.secure_url
     });
+  
   } catch (error) {
     if (req.file?.path) {
       fs.unlink(req.file.path, () => {});
