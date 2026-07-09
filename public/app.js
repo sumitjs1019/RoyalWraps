@@ -282,7 +282,11 @@ function getSelectionFromContainer(container) {
 }
 
 function getSelectionForProduct(productId) {
-  function maybeReturnToCustomizeAfterSelection(container) {
+  const container = productGrid.querySelector(`[data-selector-group="card"][data-product="${productId}"]`);
+  return getSelectionFromContainer(container);
+}
+
+function maybeReturnToCustomizeAfterSelection(container) {
   const selection = getSelectionFromContainer(container);
   const brand = String(selection.brand || '').trim();
   const model = String(selection.model || '').trim();
@@ -313,9 +317,6 @@ function getSelectionForProduct(productId) {
       customizeStatus.className = 'customize-status';
     }
   }
-}
-  const container = productGrid.querySelector(`[data-selector-group="card"][data-product="${productId}"]`);
-  return getSelectionFromContainer(container);
 }
 
 function updateCustomModelField(modelSelect) {
