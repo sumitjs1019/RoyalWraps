@@ -374,9 +374,10 @@ function renderCart() {
       const product = getProduct(item.id);
       if (!product) return '';
       const key = cartKey(item);
+      const cartImage = item.image || product.image;
       return `
         <div class="cart-row">
-          <img src="${product.image}" alt="${product.name}" />
+         <img src="${cartImage}" alt="${product.name}" />
           <div class="cart-row-info">
             <h4>${product.name}</h4>
             <p class="cart-model">${item.brand || 'Brand not selected'} • ${item.model || 'Model not selected'}</p>
@@ -426,7 +427,7 @@ function addToCart(id, selection) {
   saveCart();
   renderCart();
 }
-function addCustomUploadToCart() {
+function addCustomUploadToCart(imageUrl) {
   const id = CUSTOM_PRODUCT.id;
   const brand = 'Custom';
   const model = 'Photo Uploaded';
@@ -435,12 +436,14 @@ function addCustomUploadToCart() {
 
   if (existing) {
     existing.qty = Math.min(existing.qty + 1, 10);
+    existing.image = imageUrl || existing.image || CUSTOM_PRODUCT.image;
   } else {
     cart.push({
       id,
       brand,
       model,
-      qty: 1
+      qty: 1,
+      image: imageUrl || CUSTOM_PRODUCT.image
     });
   }
 
@@ -779,7 +782,7 @@ async function handleCustomizeSubmit(event) {
     }
     customizeStatus.textContent = 'Photo uploaded successfully';
     customizeStatus.classList.add('success');
-    addCustomUploadToCart(data.imageurl);
+    addCustomUploadToCart(data.imageUrl);
     customizeForm.reset();
   } catch (error) {
     customizeStatus.textContent = error.message;
