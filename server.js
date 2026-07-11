@@ -74,17 +74,17 @@ function saveCustomizeOrder(order) {
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 const productCatalog = {
-  'custom-mobile-skin': { name: 'Custom Photo Mobile Skin', price: 599 },
-  'ayodhya-mandir': { name: 'Ayodhya Mandir Heritage Skin', price: 599 },
-  'lotus-jaali': { name: 'Lotus Jaali Palace Skin', price: 599 },
-  'cosmic-galaxy': { name: 'Cosmic Galaxy Vortex Skin', price: 599 },
-  'obsidian-diamond': { name: 'Obsidian Diamond Armor Skin', price: 599 },
-  'honeycomb-pro': { name: 'Honeycomb Copper Pro Skin', price: 599 },
-  'peacock-krishna': { name: 'Peacock Jewel Krishna Skin', price: 599 },
-  'luxury-leather': { name: 'Luxury Quilted Leather Skin', price: 599 },
-  'emerald-marble': { name: 'Emerald Marble Gold Skin', price: 599 },
-  'sapphire-marble': { name: 'Sapphire Marble Gold Skin', price: 599 },
-  'royal-midnight': { name: 'Royal Midnight Palace Skin', price: 599 }
+  'custom-mobile-skin': { name: 'Custom Photo Mobile Skin', price: 399},
+  'ayodhya-mandir': { name: 'Ayodhya Mandir Heritage Skin', price: 399 },
+  'lotus-jaali': { name: 'Lotus Jaali Palace Skin', price: 399 },
+  'cosmic-galaxy': { name: 'Cosmic Galaxy Vortex Skin', price: 399 },
+  'obsidian-diamond': { name: 'Obsidian Diamond Armor Skin', price: 399 },
+  'honeycomb-pro': { name: 'Honeycomb Copper Pro Skin', price: 399 },
+  'peacock-krishna': { name: 'Peacock Jewel Krishna Skin', price: 399 },
+  'luxury-leather': { name: 'Luxury Quilted Leather Skin', price: 399 },
+  'emerald-marble': { name: 'Emerald Marble Gold Skin', price: 399 },
+  'sapphire-marble': { name: 'Sapphire Marble Gold Skin', price: 399 },
+  'royal-midnight': { name: 'Royal Midnight Palace Skin', price: 399 }
 };
 
 const OTHER_MODEL_VALUE = '__other__';
