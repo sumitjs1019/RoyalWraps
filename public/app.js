@@ -847,19 +847,19 @@ if (!pendingCustomizeSelection?.brand || !pendingCustomizeSelection?.model) {
   returnToCustomizeAfterModelSelection = true;
 
   customizeStatus.textContent =
-    '⚠️ Please select your mobile brand and model first to upload a photo/design.';
+    'Please select Mobile Brand and Mobile Model first.';
 
   customizeStatus.className = 'customize-status error';
+
   setTimeout(() => {
+    customizeStatus.textContent = '';
+    customizeStatus.className = 'customize-status';
+
     document.getElementById('products')?.scrollIntoView({
       behavior: 'smooth',
       block: 'start'
     });
   }, 2000);
-  setTimeout(() => {
-    customizeStatus.textContent = '';
-    customizeStatus.className = 'customize-status';
-  }, 5000);
 
   return;
 }
