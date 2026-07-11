@@ -848,10 +848,12 @@ if (!pendingCustomizeSelection?.brand || !pendingCustomizeSelection?.model) {
   customizeStatus.textContent = 'Please select Mobile Brand and Mobile Model from any product before uploading photo.';
   customizeStatus.className = 'customize-status error';
 
+ setTimeout(() => {
   document.getElementById('products')?.scrollIntoView({
-    behavior: 'smooth'
+    behavior: 'smooth',
+    block: 'start'
   });
-
+}, 2000);
   return;
 }
   customizeStatus.textContent = 'Uploading your photo...';
