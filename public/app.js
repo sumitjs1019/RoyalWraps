@@ -106,7 +106,17 @@ const phoneModels = {
 };
 
 const products = [
-
+ {
+    id: 'sapphire-marble',
+    name: 'Sapphire Marble Gold Skin',
+    price: SELLING_PRICE,
+    originalPrice: ORIGINAL_PRICE,
+    discountPercent: DISCOUNT_PERCENT,
+    discountAmount: DISCOUNT_AMOUNT,
+    tag: 'Marble Luxury',
+    image: 'assets/products/sapphire-marble.png',
+    description: 'Sapphire blue marble skin with premium gold cracks and dramatic studio styling.'
+  },
    {
     id: 'royal-midnight',
     name: 'Royal Midnight Palace Skin',
@@ -118,8 +128,6 @@ const products = [
     image: 'assets/products/royal-midnight.png',
     description: 'Midnight blue palace pattern with gold borders, floral details and luxury royal depth.'
   },
- 
- 
   {
     id: 'obsidian-diamond',
     name: 'Obsidian Diamond Armor Skin',
@@ -142,17 +150,6 @@ const products = [
     tag: 'Royal Jewel',
     image: 'assets/products/peacock-krishna.png',
     description: 'Peacock feather jewel artwork with blue, green and gold detailing for a royal Indian statement.'
-  },
-  {
-    id: 'sapphire-marble',
-    name: 'Sapphire Marble Gold Skin',
-    price: SELLING_PRICE,
-    originalPrice: ORIGINAL_PRICE,
-    discountPercent: DISCOUNT_PERCENT,
-    discountAmount: DISCOUNT_AMOUNT,
-    tag: 'Marble Luxury',
-    image: 'assets/products/sapphire-marble.png',
-    description: 'Sapphire blue marble skin with premium gold cracks and dramatic studio styling.'
   },
   {
     id: 'bhagwan-ram',
