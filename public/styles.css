@@ -415,6 +415,44 @@ main,
   font-weight: 900;
 }
 
+.delivery-offer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: -4px 0 14px;
+  padding: 10px 14px;
+  border: 1px solid rgba(87, 211, 130, 0.35);
+  border-radius: 12px;
+  background: rgba(50, 180, 100, 0.08);
+}
+
+.delivery-fee {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.delivery-fee s {
+  color: #e09999;
+  font-weight: 900;
+}
+
+.free-delivery {
+  color: #69e69b;
+  font-size: 0.82rem;
+  font-weight: 950;
+  white-space: nowrap;
+}
+
+@media (max-width: 420px) {
+  .delivery-offer {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 5px;
+  }
+}
+
 .product-info {
   padding: 20px;
 }
