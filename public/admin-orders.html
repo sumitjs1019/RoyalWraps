@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex,nofollow" />
+    <title>RoyalWrap Orders</title>
+    <link rel="stylesheet" href="admin-orders.css" />
+    <script src="admin-orders.js" defer></script>
+  </head>
+  <body>
+    <main class="admin-shell">
+      <header class="admin-header">
+        <div>
+          <p class="eyebrow">RoyalWrap Admin</p>
+          <h1>Orders Dashboard</h1>
+          <p class="subtitle">Paid Razorpay orders and fulfillment management.</p>
+        </div>
+        <a class="store-link" href="/">Open Store</a>
+      </header>
+
+      <section class="login-card" id="loginCard">
+        <h2>Admin access</h2>
+        <p>Enter the private admin key configured in Render.</p>
+        <form id="loginForm">
+          <input id="adminKey" type="password" minlength="8" autocomplete="current-password" placeholder="Admin key" required />
+          <button type="submit">Open Orders</button>
+        </form>
+        <p class="message" id="loginMessage"></p>
+      </section>
+
+      <section class="dashboard hidden" id="dashboard">
+        <div class="toolbar">
+          <input id="searchInput" type="search" placeholder="Search order, customer, phone, product..." />
+          <select id="statusFilter" aria-label="Filter by fulfillment status">
+            <option value="">All statuses</option>
+            <option>New</option>
+            <option>Processing</option>
+            <option>Printed</option>
+            <option>Shipped</option>
+            <option>Delivered</option>
+            <option>Cancelled</option>
+          </select>
+          <button id="refreshBtn" type="button">Refresh</button>
+          <button id="logoutBtn" class="secondary" type="button">Lock</button>
+        </div>
+
+        <div class="summary-grid">
+          <article><span>Total Orders</span><strong id="totalOrders">0</strong></article>
+          <article><span>Paid Revenue</span><strong id="paidRevenue">₹0</strong></article>
+          <article><span>New Orders</span><strong id="newOrders">0</strong></article>
+          <article><span>Shipped / Delivered</span><strong id="completedOrders">0</strong></article>
+        </div>
+
+        <p class="message" id="dashboardMessage"></p>
+        <div class="orders-grid" id="ordersGrid"></div>
+        <div class="empty-state hidden" id="emptyState">No matching orders found.</div>
+      </section>
+    </main>
+  </body>
+</html>
