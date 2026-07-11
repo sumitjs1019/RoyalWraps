@@ -1,20 +1,15 @@
 {
   "name": "royalwraps-razorpay-store",
-  "version": "1.1.1",
-  "description": "Premium mobile skin ecommerce website with Razorpay checkout and private orders dashboard.",
-  "main": "orders-gateway.js",
+  "version": "1.2.0",
+  "description": "Premium mobile skin ecommerce website with Razorpay prepaid checkout, Shiprocket API and private orders dashboard.",
+  "main": "shiprocket-gateway.js",
   "scripts": {
-    "start": "node orders-gateway.js",
-    "dev": "node --watch orders-gateway.js",
+    "start": "node shiprocket-gateway.js",
+    "dev": "node --watch shiprocket-gateway.js",
+    "start:orders": "node orders-gateway.js",
     "start:store": "node server.js"
   },
-  "keywords": [
-    "ecommerce",
-    "razorpay",
-    "mobile-skins",
-    "checkout",
-    "orders-dashboard"
-  ],
+  "keywords": ["ecommerce", "razorpay", "shiprocket", "prepaid-shipping", "mobile-skins"],
   "author": "RoyalWraps",
   "license": "MIT",
   "dependencies": {
