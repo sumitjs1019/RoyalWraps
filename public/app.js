@@ -656,20 +656,51 @@ async function handleCheckout(event) {
       theme: {
         color: '#d6a247'
       },
-      handler: async function (response) {
-        try {
-          await verifyPayment(response);
-          setStatus(`Payment successful. Payment ID: ${response.razorpay_payment_id}`, 'success');
-          cart = [];
-          saveCart();
-          renderCart();
-          checkoutForm.reset();
-        } catch (error) {
-          setStatus(error.message, 'error');
-        } finally {
-          checkoutBtn.disabled = false;
-        }
-      },
+     handler: async function (response) {
+  try {
+    const verifiedPayment =
+      await verifyPayment(response);
+
+    const orderSummary = {
+      orderId:
+        verifiedPayment.orderId ||
+        order.orderId,
+
+      paymentId:
+        verifiedPayment.paymentId ||
+        response.razorpay_payment_id,
+
+      items: order.items,
+
+      customer: customer,
+
+      total: order.displayAmount,
+
+      deliveryTime:
+        '4 to 7 working days',
+
+      paidAt:
+        new Date().toISOString()
+    };
+
+    sessionStorage.setItem(
+      'royalwrap-order',
+      JSON.stringify(orderSummary)
+    );
+
+    cart = [];
+    saveCart();
+    renderCart();
+    checkoutForm.reset();
+
+    window.location.href =
+      '/order-success.html';
+
+  } catch (error) {
+    setStatus(error.message, 'error');
+    checkoutBtn.disabled = false;
+  }
+},
       modal: {
         ondismiss: function () {
           setStatus('Checkout closed. Your cart is still saved.');
