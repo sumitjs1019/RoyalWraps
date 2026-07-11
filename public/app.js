@@ -374,6 +374,15 @@ function renderProducts() {
               Limited Stock
           </div>
           <div class="product-price">${productPriceHTML(product)}</div>
+          <div class="delivery-offer">
+  <span class="delivery-fee">
+    Delivery Fees: <s>₹50</s>
+  </span>
+
+  <strong class="free-delivery">
+    FREE DELIVERY
+  </strong>
+</div>
           ${phoneSelectorHTML(product.id)}
           <div class="card-actions">
            <button class="secondary-btn" data-customize="${product.id}">Customize</button>
