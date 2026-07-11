@@ -366,7 +366,6 @@ function renderProducts() {
           <img src="${product.image}" alt="${product.name}" loading="lazy" />
         </div>
         <div class="product-info">
-          <span class="product-tag">${product.tag}</span>
           <h3>${product.name}</h3>
           <p>${product.description}</p>
           <div class="limited-stock-badge">
