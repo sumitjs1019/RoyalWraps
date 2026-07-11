@@ -1,11 +1,11 @@
 {
   "name": "royalwraps-razorpay-store",
-  "version": "1.2.0",
-  "description": "Premium mobile skin ecommerce website with Razorpay checkout, admin orders and customer tracking portal.",
-  "main": "customer-portal-gateway.js",
+  "version": "1.1.1",
+  "description": "Premium mobile skin ecommerce website with Razorpay checkout and private orders dashboard.",
+  "main": "orders-gateway.js",
   "scripts": {
-    "start": "node customer-portal-gateway.js",
-    "dev": "node --watch customer-portal-gateway.js",
+    "start": "node orders-gateway.js",
+    "dev": "node --watch orders-gateway.js",
     "start:store": "node server.js"
   },
   "keywords": [
@@ -13,7 +13,7 @@
     "razorpay",
     "mobile-skins",
     "checkout",
-    "order-tracking"
+    "orders-dashboard"
   ],
   "author": "RoyalWraps",
   "license": "MIT",
