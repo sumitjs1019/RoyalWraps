@@ -113,7 +113,6 @@ const products = [
     originalPrice: ORIGINAL_PRICE,
     discountPercent: DISCOUNT_PERCENT,
     discountAmount: DISCOUNT_AMOUNT,
-    tag: 'Marble Luxury',
     image: 'assets/products/sapphire-marble.png',
     description: 'Sapphire blue marble skin with premium gold cracks and dramatic studio styling.'
   },
@@ -124,7 +123,6 @@ const products = [
     originalPrice: ORIGINAL_PRICE,
     discountPercent: DISCOUNT_PERCENT,
     discountAmount: DISCOUNT_AMOUNT,
-    tag: 'Royal Edition',
     image: 'assets/products/royal-midnight.png',
     description: 'Midnight blue palace pattern with gold borders, floral details and luxury royal depth.'
   },
@@ -135,7 +133,6 @@ const products = [
     originalPrice: ORIGINAL_PRICE,
     discountPercent: DISCOUNT_PERCENT,
     discountAmount: DISCOUNT_AMOUNT,
-    tag: 'Stealth Pro',
     image: 'assets/products/obsidian-diamond.png',
     description: 'Matte black geometric diamond panels with a technical, minimal and powerful look.'
   },
@@ -147,7 +144,6 @@ const products = [
     originalPrice: ORIGINAL_PRICE,
     discountPercent: DISCOUNT_PERCENT,
     discountAmount: DISCOUNT_AMOUNT,
-    tag: 'Royal Jewel',
     image: 'assets/products/peacock-krishna.png',
     description: 'Peacock feather jewel artwork with blue, green and gold detailing for a royal Indian statement.'
   },
@@ -158,7 +154,6 @@ const products = [
     originalPrice: ORIGINAL_PRICE,
     discountPercent: DISCOUNT_PERCENT,
     discountAmount: DISCOUNT_AMOUNT,
-    tag: 'God',
     image: 'assets/products/bhagwan-ram.jpeg',
     description: 'Animated Bhagwan Ram Premium 3D Printed Mobile skin.'
   }
