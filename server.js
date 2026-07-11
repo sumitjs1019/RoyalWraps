@@ -83,7 +83,7 @@ const productCatalog = {
   'peacock-krishna': { name: 'Peacock Jewel Krishna Skin', price: 599 },
   'luxury-leather': { name: 'Luxury Quilted Leather Skin', price: 599 },
   'emerald-marble': { name: 'Emerald Marble Gold Skin', price: 599 },
-  'sapphire-marble': { name: 'Sapphire Marble Gold Skin', price: 599 },
+  'sapphire-marble': { name: 'Sapphire Marble Gold Skin', price: 1 },
   'royal-midnight': { name: 'Royal Midnight Palace Skin', price: 599 }
 };
 
