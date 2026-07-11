@@ -1,17 +1,19 @@
 {
   "name": "royalwraps-razorpay-store",
-  "version": "1.0.0",
-  "description": "Premium mobile skins ecommerce website with cart, preview modal and Razorpay checkout backend.",
-  "main": "server.js",
+  "version": "1.1.0",
+  "description": "Premium mobile skins ecommerce website with Razorpay checkout and private orders dashboard.",
+  "main": "orders-gateway.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node --watch server.js"
+    "start": "node orders-gateway.js",
+    "dev": "node --watch orders-gateway.js",
+    "start:store": "node server.js"
   },
   "keywords": [
     "ecommerce",
     "razorpay",
     "mobile-skins",
-    "checkout"
+    "checkout",
+    "orders-dashboard"
   ],
   "author": "RoyalWraps",
   "license": "MIT",
