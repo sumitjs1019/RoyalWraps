@@ -6,6 +6,8 @@ const { createPrepaidOrder, configured } = require('./shiprocket-service');
 const {
   handleCustomerOtpSend,
   handleCustomerOtpVerify,
+  handleCustomerSession,
+  handleCustomerLogout,
   handleCustomerOrders
 } = require('./customer-orders-service');
 require('dotenv').config();
@@ -253,8 +255,10 @@ http.createServer(async (req, res) => {
   try {
     const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
     if (url.pathname.startsWith('/api/admin/shiprocket/')) return await shiprocketAdmin(req, res, url);
-    if (req.method === 'POST' && url.pathname === '/api/customer/otp/send') return await handleCustomerOtpSend(req, res);
-    if (req.method === 'POST' && url.pathname === '/api/customer/otp/verify') return await handleCustomerOtpVerify(req, res);
+    if (req.method === 'POST' && ['/api/customer/auth/send-otp', '/api/customer/otp/send'].includes(url.pathname)) return await handleCustomerOtpSend(req, res);
+    if (req.method === 'POST' && ['/api/customer/auth/verify-otp', '/api/customer/otp/verify'].includes(url.pathname)) return await handleCustomerOtpVerify(req, res);
+    if (req.method === 'GET' && url.pathname === '/api/customer/auth/session') return handleCustomerSession(req, res);
+    if (req.method === 'POST' && url.pathname === '/api/customer/auth/logout') return handleCustomerLogout(req, res);
     if (req.method === 'POST' && url.pathname === '/api/customer/orders') return await handleCustomerOrders(req, res);
     if (req.method === 'POST' && url.pathname === '/api/create-order') return await createOrder(req, res);
     if (req.method === 'POST' && url.pathname === '/api/verify-payment') return await verify(req, res);
