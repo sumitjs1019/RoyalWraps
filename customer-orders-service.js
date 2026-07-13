@@ -2,11 +2,21 @@ const https = require('https');
 const fs = require('fs');
 const path = require('path');
 const { trackByAwb, configured: shiprocketConfigured } = require('./shiprocket-service');
+const {
+  configured: otpConfigured,
+  digits,
+  sendOtp,
+  checkOtp,
+  createSessionToken,
+  verifySessionToken,
+  limitOtpSend,
+  limitOtpVerify
+} = require('./otp-service');
 
 const dataDir = path.join(__dirname, 'data');
 const statusFile = path.join(dataDir, 'order-statuses.json');
 const shipmentsFile = path.join(dataDir, 'shiprocket-orders.json');
-const attempts = new Map();
+const accessAttempts = new Map();
 let cache = { expiresAt: 0, orders: [] };
 
 function send(res, status, payload) {
@@ -51,27 +61,40 @@ function readBody(req, limit = 32768) {
   });
 }
 
-function rateLimit(req) {
+function requestIp(req) {
+  return String(req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown')
+    .split(',')[0]
+    .trim();
+}
+
+function limitOrderAccess(req) {
   const now = Date.now();
-  const ip = String(req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown')
-    .split(',')[0].trim();
-  const entry = attempts.get(ip);
-  if (!entry || now > entry.resetAt) {
-    attempts.set(ip, { count: 1, resetAt: now + 15 * 60 * 1000 });
+  const key = requestIp(req);
+  const entry = accessAttempts.get(key);
+  if (!entry || now >= entry.resetAt) {
+    accessAttempts.set(key, { count: 1, resetAt: now + 15 * 60 * 1000 });
     return;
   }
   entry.count += 1;
-  if (entry.count > 25) {
-    throw Object.assign(new Error('Too many attempts. Please try again after 15 minutes.'), { statusCode: 429 });
+  if (entry.count > 40) {
+    throw Object.assign(new Error('Too many requests. Please try again after 15 minutes.'), { statusCode: 429 });
   }
 }
 
-function digits(value) {
-  return String(value || '').replace(/\D/g, '').slice(-10);
+function validPurpose(value) {
+  const purpose = String(value || '').toLowerCase();
+  if (!['list', 'track'].includes(purpose)) {
+    throw Object.assign(new Error('Invalid order access type.'), { statusCode: 400 });
+  }
+  return purpose;
 }
 
-function email(value) {
-  return String(value || '').trim().toLowerCase();
+function validMobile(value) {
+  const mobile = digits(value);
+  if (!/^[6-9]\d{9}$/.test(mobile)) {
+    throw Object.assign(new Error('Enter a valid 10-digit Indian mobile number.'), { statusCode: 400 });
+  }
+  return mobile;
 }
 
 function razorpayRequest(apiPath) {
@@ -161,6 +184,10 @@ async function loadOrders(force = false) {
   return cache.orders;
 }
 
+function ordersForMobile(orders, mobile) {
+  return orders.filter((order) => digits(order.customer.mobile) === mobile);
+}
+
 function publicOrder(order) {
   return {
     id: order.id,
@@ -173,7 +200,6 @@ function publicOrder(order) {
     customer: {
       name: order.customer.name,
       mobile: digits(order.customer.mobile),
-      email: order.customer.email,
       pincode: order.customer.pincode
     },
     items: order.items,
@@ -201,44 +227,80 @@ function summarizeTracking(data) {
   };
 }
 
+async function handleCustomerOtpSend(req, res) {
+  try {
+    if (req.method !== 'POST') return send(res, 405, { error: 'Method not allowed.' });
+    if (!otpConfigured()) return send(res, 503, { error: 'Mobile OTP is not configured on the server.' });
+    const input = await readBody(req);
+    const purpose = validPurpose(input.purpose);
+    const mobile = validMobile(input.mobile);
+    limitOtpSend(req, mobile);
+
+    const orders = await loadOrders(true);
+    if (!ordersForMobile(orders, mobile).length) {
+      return send(res, 404, { error: 'No RoyalWrap order was found for this mobile number.' });
+    }
+
+    await sendOtp(mobile);
+    return send(res, 200, {
+      success: true,
+      purpose,
+      mobile,
+      message: 'OTP sent to your mobile number.'
+    });
+  } catch (error) {
+    console.error('Customer OTP send failed:', error.providerMessage || error.message);
+    return send(res, error.statusCode || 500, { error: error.message || 'Could not send OTP.' });
+  }
+}
+
+async function handleCustomerOtpVerify(req, res) {
+  try {
+    if (req.method !== 'POST') return send(res, 405, { error: 'Method not allowed.' });
+    if (!otpConfigured()) return send(res, 503, { error: 'Mobile OTP is not configured on the server.' });
+    const input = await readBody(req);
+    const purpose = validPurpose(input.purpose);
+    const mobile = validMobile(input.mobile);
+    limitOtpVerify(req, mobile);
+    await checkOtp(mobile, input.code);
+    const token = createSessionToken(mobile, purpose);
+    return send(res, 200, {
+      success: true,
+      mobile,
+      purpose,
+      token,
+      expiresInMinutes: Math.min(Math.max(Number(process.env.OTP_SESSION_TTL_MINUTES || 15), 5), 60)
+    });
+  } catch (error) {
+    console.error('Customer OTP verification failed:', error.providerMessage || error.message);
+    return send(res, error.statusCode || 500, { error: error.message || 'Could not verify OTP.' });
+  }
+}
+
 async function handleCustomerOrders(req, res) {
   try {
     if (req.method !== 'POST') return send(res, 405, { error: 'Method not allowed.' });
-    rateLimit(req);
+    limitOrderAccess(req);
     const input = await readBody(req);
-    const mode = String(input.mode || 'track').toLowerCase();
-    const mobile = digits(input.mobile);
-    if (!/^\d{10}$/.test(mobile)) {
-      return send(res, 400, { error: 'Enter the same 10-digit mobile number used during checkout.' });
+    const mode = validPurpose(input.mode);
+    const mobile = validMobile(input.mobile);
+    if (!verifySessionToken(input.token, mobile, mode)) {
+      return send(res, 401, { error: 'OTP verification expired or is invalid. Please verify your mobile number again.' });
     }
 
     const orders = await loadOrders(true);
-    let matches = [];
-    if (mode === 'list') {
-      const customerEmail = email(input.email);
-      if (!/^\S+@\S+\.\S+$/.test(customerEmail)) {
-        return send(res, 400, { error: 'Enter the same email used during checkout.' });
-      }
-      matches = orders.filter((order) => (
-        digits(order.customer.mobile) === mobile && email(order.customer.email) === customerEmail
-      ));
-    } else {
-      const orderId = String(input.orderId || '').trim();
-      if (orderId.length < 6 || orderId.length > 80) {
-        return send(res, 400, { error: 'Enter a valid Order ID.' });
-      }
-      matches = orders.filter((order) => (
-        digits(order.customer.mobile) === mobile && (order.id === orderId || order.receipt === orderId)
-      ));
-    }
-
+    const matches = ordersForMobile(orders, mobile).slice(0, 20);
     const result = matches.map(publicOrder);
-    if (mode === 'track' && result.length === 1 && result[0].shipment.awbCode && shiprocketConfigured()) {
-      try {
-        result[0].liveTracking = summarizeTracking(await trackByAwb(result[0].shipment.awbCode));
-      } catch {
-        result[0].liveTracking = null;
-      }
+
+    if (mode === 'track' && shiprocketConfigured()) {
+      await Promise.all(result.map(async (order) => {
+        if (!order.shipment.awbCode) return;
+        try {
+          order.liveTracking = summarizeTracking(await trackByAwb(order.shipment.awbCode));
+        } catch {
+          order.liveTracking = null;
+        }
+      }));
     }
 
     return send(res, 200, { orders: result, fetchedAt: new Date().toISOString() });
@@ -247,4 +309,8 @@ async function handleCustomerOrders(req, res) {
   }
 }
 
-module.exports = { handleCustomerOrders };
+module.exports = {
+  handleCustomerOtpSend,
+  handleCustomerOtpVerify,
+  handleCustomerOrders
+};
