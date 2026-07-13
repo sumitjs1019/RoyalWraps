@@ -7,16 +7,29 @@
     <meta name="description" content="Shop premium Indian heritage, marble, leather, galaxy and royal mobile skins with secure Razorpay checkout." />
     <link rel="preconnect" href="https://checkout.razorpay.com" />
     <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="header-menu.css" />
     <script src="https://checkout.razorpay.com/v1/checkout.js" defer></script>
     <script src="shipping-checkout.js" defer></script>
+    <script src="header-menu.js" defer></script>
     <script src="app.js" defer></script>
   </head>
   <body>
     <div class="noise"></div>
     <header class="site-header">
       <a class="brand" href="#home" aria-label="RoyalWraps home"><span class="brand-mark logo-mark"><img src="assets/royalwraps-logo-icon.png" alt="RoyalWraps logo" /></span><span><strong>RoyalWrap</strong><small>Premium Mobile Skins</small></span></a>
-      <nav class="main-nav" aria-label="Main navigation"><a href="#products">Products</a><a href="#why">Quality</a><a href="#customize">Custom</a><a href="orders.html#my-orders">My Orders</a><a href="orders.html#track-order">Track Order</a><button class="link-btn" data-open-contact>Contact Us</button></nav>
-      <button class="cart-button" id="openCart" aria-label="Open cart"><span>Cart</span><b id="cartCount">0</b></button>
+      <nav class="main-nav" aria-label="Main navigation"><a href="#products">Products</a><a href="#why">Quality</a><a href="#customize">Custom</a></nav>
+      <div class="header-actions">
+        <div class="header-menu" id="headerMenu">
+          <button class="menu-toggle" id="menuToggle" type="button" aria-label="Open customer menu" aria-expanded="false" aria-controls="headerMenuPanel"><span></span><span></span><span></span></button>
+          <div class="menu-panel" id="headerMenuPanel" role="menu" aria-hidden="true">
+            <p class="menu-label">Customer Menu</p>
+            <a href="orders.html#my-orders" role="menuitem"><strong>My Orders</strong><small>View your previous orders</small></a>
+            <a href="orders.html#track-order" role="menuitem"><strong>Track Order</strong><small>Check shipment and delivery status</small></a>
+            <button class="menu-panel-button" type="button" data-open-contact role="menuitem"><strong>Contact Us</strong><small>Get help from RoyalWrap support</small></button>
+          </div>
+        </div>
+        <button class="cart-button" id="openCart" aria-label="Open cart"><span>Cart</span><b id="cartCount">0</b></button>
+      </div>
     </header>
     <main>
       <section class="section-heading" id="products"><p class="eyebrow">RoyalWrap Collection</p><h2>Choose your premium skin</h2></section>
