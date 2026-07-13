@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Orders | RoyalWrap</title>
+  <meta name="description" content="View your RoyalWrap order history securely using the checkout email and mobile number.">
+  <link rel="stylesheet" href="customer-orders.css">
+  <script src="customer-orders.js" defer></script>
+</head>
+<body data-order-mode="list">
+  <div class="shell">
+    <div class="topbar">
+      <a class="brand" href="/"><img src="assets/royalwraps-logo-icon.png" alt="RoyalWrap logo"><span><strong>RoyalWrap</strong><small>Premium Mobile Skins</small></span></a>
+      <a class="back" href="/">← Continue Shopping</a>
+    </div>
+
+    <section class="hero">
+      <div class="eyebrow">Customer Order Centre</div>
+      <h1>My Orders</h1>
+      <p>Enter the same email address and mobile number used during checkout to view your RoyalWrap order history.</p>
+      <a class="switch-link" href="track-order.html">Need shipment tracking? Open Track Order</a>
+    </section>
+
+    <section class="card">
+      <form id="customerOrderForm" class="form-grid">
+        <label>Email<input type="email" name="email" required placeholder="Email used during checkout" autocomplete="email"></label>
+        <label>Mobile number<input type="tel" name="mobile" required maxlength="10" inputmode="numeric" pattern="[0-9]{10}" placeholder="10-digit mobile number" autocomplete="tel"></label>
+        <div class="full"><button class="primary" type="submit">Show My Orders</button><p class="note">Both details must exactly match your checkout information.</p></div>
+      </form>
+      <div class="message" id="orderMessage"></div>
+    </section>
+
+    <div class="orders" id="orderResults"></div>
+  </div>
+</body>
+</html>
