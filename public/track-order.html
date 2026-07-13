@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Track Order | RoyalWrap</title>
-  <meta name="description" content="Track a RoyalWrap shipment securely using the Order ID and checkout mobile number.">
+  <meta name="description" content="Track RoyalWrap shipments securely using mobile OTP verification.">
   <link rel="stylesheet" href="customer-orders.css">
   <script src="customer-orders.js" defer></script>
 </head>
@@ -18,14 +18,18 @@
     <section class="hero">
       <div class="eyebrow">Shipment Tracking</div>
       <h1>Track Order</h1>
-      <p>Enter your Razorpay Order ID or RoyalWrap receipt ID and the same mobile number used during checkout.</p>
+      <p>Enter the same mobile number used during checkout. Verify the OTP to see all linked orders and available courier tracking.</p>
     </section>
 
     <section class="card">
       <form id="customerOrderForm" class="form-grid">
-        <label>Order ID<input type="text" name="orderId" required placeholder="Example: order_... or rw_..." autocomplete="off"></label>
-        <label>Mobile number<input type="tel" name="mobile" required maxlength="10" inputmode="numeric" pattern="[0-9]{10}" placeholder="10-digit mobile number" autocomplete="tel"></label>
-        <div class="full"><button class="primary" type="submit">Track Order</button><p class="note">Live courier updates appear after a courier is assigned and an AWB is generated in Shiprocket.</p></div>
+        <label class="full">Mobile number<input id="mobileInput" type="tel" name="mobile" required maxlength="10" inputmode="numeric" pattern="[6-9][0-9]{9}" placeholder="10-digit Indian mobile number" autocomplete="tel"></label>
+        <div class="full"><button class="primary" id="sendOtpBtn" type="button">Send OTP</button><p class="note">Live courier updates appear after a courier is assigned and an AWB is generated in Shiprocket.</p></div>
+        <div class="otp-stage hidden" id="otpStage">
+          <label class="full">Enter OTP<input id="otpInput" type="tel" name="otp" maxlength="10" inputmode="numeric" placeholder="Enter OTP" autocomplete="one-time-code"></label>
+          <div><button class="primary" id="verifyOtpBtn" type="submit">Verify OTP & Track Orders</button></div>
+          <div><button class="secondary-action" id="resendOtpBtn" type="button" disabled>Resend OTP</button></div>
+        </div>
       </form>
       <div class="message" id="orderMessage"></div>
     </section>
