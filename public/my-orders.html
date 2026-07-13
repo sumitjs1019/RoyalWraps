@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>My Orders | RoyalWrap</title>
-  <meta name="description" content="View your RoyalWrap order history securely using mobile OTP verification.">
+  <meta name="description" content="View all RoyalWrap orders linked to your logged-in mobile number.">
   <link rel="stylesheet" href="customer-orders.css">
   <script src="customer-orders.js" defer></script>
 </head>
@@ -16,24 +16,18 @@
     </div>
 
     <section class="hero">
-      <div class="eyebrow">Customer Order Centre</div>
+      <div class="eyebrow">Customer Account</div>
       <h1>My Orders</h1>
-      <p>Enter the same mobile number used during checkout. Verify the OTP to view all orders linked to that number.</p>
+      <p>All orders linked to your verified login mobile number appear automatically here.</p>
+      <div class="page-links"><a href="track-order.html">Track Orders</a></div>
     </section>
 
-    <section class="card">
-      <form id="customerOrderForm" class="form-grid">
-        <label class="full">Mobile number<input id="mobileInput" type="tel" name="mobile" required maxlength="10" inputmode="numeric" pattern="[6-9][0-9]{9}" placeholder="10-digit Indian mobile number" autocomplete="tel"></label>
-        <div class="full"><button class="primary" id="sendOtpBtn" type="button">Send OTP</button><p class="note">OTP will be sent only when this mobile number has a RoyalWrap order.</p></div>
-        <div class="otp-stage hidden" id="otpStage">
-          <label class="full">Enter OTP<input id="otpInput" type="tel" name="otp" maxlength="10" inputmode="numeric" placeholder="Enter OTP" autocomplete="one-time-code"></label>
-          <div><button class="primary" id="verifyOtpBtn" type="submit">Verify OTP & Show My Orders</button></div>
-          <div><button class="secondary-action" id="resendOtpBtn" type="button" disabled>Resend OTP</button></div>
-        </div>
-      </form>
-      <div class="message" id="orderMessage"></div>
+    <section class="account-bar">
+      <div><span class="account-label">Logged in as</span><strong id="accountMobile">Checking login...</strong></div>
+      <button class="secondary-action compact" id="logoutBtn" type="button">Logout</button>
     </section>
 
+    <div class="message" id="orderMessage"></div>
     <div class="orders" id="orderResults"></div>
   </div>
 </body>
