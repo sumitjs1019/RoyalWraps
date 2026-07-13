@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Track Order | RoyalWrap</title>
+  <meta name="description" content="Track a RoyalWrap shipment securely using the Order ID and checkout mobile number.">
+  <link rel="stylesheet" href="customer-orders.css">
+  <script src="customer-orders.js" defer></script>
+</head>
+<body data-order-mode="track">
+  <div class="shell">
+    <div class="topbar">
+      <a class="brand" href="/"><img src="assets/royalwraps-logo-icon.png" alt="RoyalWrap logo"><span><strong>RoyalWrap</strong><small>Premium Mobile Skins</small></span></a>
+      <a class="back" href="/">← Continue Shopping</a>
+    </div>
+
+    <section class="hero">
+      <div class="eyebrow">Shipment Tracking</div>
+      <h1>Track Order</h1>
+      <p>Enter your Razorpay Order ID or RoyalWrap receipt ID and the same mobile number used during checkout.</p>
+    </section>
+
+    <section class="card">
+      <form id="customerOrderForm" class="form-grid">
+        <label>Order ID<input type="text" name="orderId" required placeholder="Example: order_... or rw_..." autocomplete="off"></label>
+        <label>Mobile number<input type="tel" name="mobile" required maxlength="10" inputmode="numeric" pattern="[0-9]{10}" placeholder="10-digit mobile number" autocomplete="tel"></label>
+        <div class="full"><button class="primary" type="submit">Track Order</button><p class="note">Live courier updates appear after a courier is assigned and an AWB is generated in Shiprocket.</p></div>
+      </form>
+      <div class="message" id="orderMessage"></div>
+    </section>
+
+    <div class="orders" id="orderResults"></div>
+  </div>
+</body>
+</html>
