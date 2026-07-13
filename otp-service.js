@@ -1,27 +1,26 @@
 const https = require('https');
 const crypto = require('crypto');
 
-const VERIFY_HOST = 'verify.twilio.com';
+const TWOFACTOR_HOST = '2factor.in';
 const sendAttempts = new Map();
 const verifyAttempts = new Map();
+const otpSessions = new Map();
 
 function digits(value) {
   return String(value || '').replace(/\D/g, '').slice(-10);
 }
 
-function e164India(value) {
+function validIndianMobile(value) {
   const mobile = digits(value);
   if (!/^[6-9]\d{9}$/.test(mobile)) {
     throw Object.assign(new Error('Enter a valid 10-digit Indian mobile number.'), { statusCode: 400 });
   }
-  return `+91${mobile}`;
+  return mobile;
 }
 
 function configured() {
   return Boolean(
-    process.env.TWILIO_ACCOUNT_SID
-    && process.env.TWILIO_AUTH_TOKEN
-    && process.env.TWILIO_VERIFY_SERVICE_SID
+    process.env.TWOFACTOR_API_KEY
     && process.env.CUSTOMER_OTP_SESSION_SECRET
   );
 }
@@ -72,25 +71,15 @@ function limitOtpVerify(req, mobile) {
   });
 }
 
-function twilioFormRequest(apiPath, fields) {
+function twoFactorRequest(apiPath) {
   assertConfigured();
-  const body = new URLSearchParams(fields).toString();
-  const authorization = Buffer.from(
-    `${process.env.TWILIO_ACCOUNT_SID}:${process.env.TWILIO_AUTH_TOKEN}`
-  ).toString('base64');
-
   return new Promise((resolve, reject) => {
     const request = https.request({
-      hostname: VERIFY_HOST,
+      hostname: TWOFACTOR_HOST,
       port: 443,
       path: apiPath,
-      method: 'POST',
-      headers: {
-        Authorization: `Basic ${authorization}`,
-        Accept: 'application/json',
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Content-Length': Buffer.byteLength(body)
-      },
+      method: 'GET',
+      headers: { Accept: 'application/json' },
       timeout: 20000
     }, (response) => {
       let text = '';
@@ -98,14 +87,12 @@ function twilioFormRequest(apiPath, fields) {
       response.on('data', (chunk) => { text += chunk; });
       response.on('end', () => {
         let data = {};
-        try { data = text ? JSON.parse(text) : {}; } catch {}
-        if (response.statusCode < 200 || response.statusCode >= 300) {
-          const publicMessage = response.statusCode === 404
-            ? 'OTP expired or too many incorrect attempts. Request a new OTP.'
-            : 'OTP service could not complete the request. Please try again.';
-          const error = new Error(publicMessage);
+        try { data = text ? JSON.parse(text) : {}; } catch { data = { Details: text }; }
+        const providerStatus = String(data.Status || data.status || '').toLowerCase();
+        if (response.statusCode < 200 || response.statusCode >= 300 || providerStatus !== 'success') {
+          const error = new Error(String(data.Details || data.details || data.Message || data.message || 'OTP service could not complete the request.'));
           error.statusCode = response.statusCode === 429 ? 429 : 502;
-          error.providerMessage = data.message || '';
+          error.providerMessage = error.message;
           return reject(error);
         }
         resolve(data);
@@ -113,39 +100,58 @@ function twilioFormRequest(apiPath, fields) {
     });
     request.on('timeout', () => request.destroy(new Error('OTP service timed out.')));
     request.on('error', reject);
-    request.write(body);
     request.end();
   });
 }
 
-async function sendOtp(mobile) {
-  const to = e164India(mobile);
-  const serviceSid = encodeURIComponent(process.env.TWILIO_VERIFY_SERVICE_SID);
-  const result = await twilioFormRequest(`/v2/Services/${serviceSid}/Verifications`, {
-    To: to,
-    Channel: 'sms'
-  });
-  if (!['pending', 'approved'].includes(String(result.status || ''))) {
-    throw Object.assign(new Error('OTP could not be sent. Please try again.'), { statusCode: 502 });
+function clearExpiredOtpSessions() {
+  const now = Date.now();
+  for (const [mobile, session] of otpSessions.entries()) {
+    if (!session || session.expiresAt <= now) otpSessions.delete(mobile);
   }
-  return { status: result.status, to: digits(mobile) };
 }
 
-async function checkOtp(mobile, code) {
-  const cleanCode = String(code || '').trim();
+async function sendOtp(value) {
+  const mobile = validIndianMobile(value);
+  clearExpiredOtpSessions();
+  const apiKey = encodeURIComponent(String(process.env.TWOFACTOR_API_KEY || '').trim());
+  const result = await twoFactorRequest(`/API/V1/${apiKey}/SMS/${encodeURIComponent(mobile)}/AUTOGEN`);
+  const sessionId = String(result.Details || result.details || '').trim();
+  if (!sessionId) {
+    throw Object.assign(new Error('OTP service did not return a verification session.'), { statusCode: 502 });
+  }
+  otpSessions.set(mobile, {
+    sessionId,
+    expiresAt: Date.now() + (10 * 60 * 1000)
+  });
+  return { status: 'pending', to: mobile };
+}
+
+async function checkOtp(value, code) {
+  const mobile = validIndianMobile(value);
+  const cleanCode = String(code || '').replace(/\D/g, '').trim();
   if (!/^\d{4,10}$/.test(cleanCode)) {
     throw Object.assign(new Error('Enter the OTP sent to your mobile number.'), { statusCode: 400 });
   }
-  const to = e164India(mobile);
-  const serviceSid = encodeURIComponent(process.env.TWILIO_VERIFY_SERVICE_SID);
-  const result = await twilioFormRequest(`/v2/Services/${serviceSid}/VerificationCheck`, {
-    To: to,
-    Code: cleanCode
-  });
-  if (result.status !== 'approved') {
-    throw Object.assign(new Error('Incorrect OTP. Please check and try again.'), { statusCode: 401 });
+  clearExpiredOtpSessions();
+  const otpSession = otpSessions.get(mobile);
+  if (!otpSession) {
+    throw Object.assign(new Error('OTP expired. Please request a new OTP.'), { statusCode: 401 });
   }
-  return true;
+  const apiKey = encodeURIComponent(String(process.env.TWOFACTOR_API_KEY || '').trim());
+  try {
+    await twoFactorRequest(`/API/V1/${apiKey}/SMS/VERIFY/${encodeURIComponent(otpSession.sessionId)}/${encodeURIComponent(cleanCode)}`);
+    otpSessions.delete(mobile);
+    return true;
+  } catch (error) {
+    const providerText = String(error.providerMessage || error.message || '').toLowerCase();
+    const publicError = Object.assign(
+      new Error(providerText.includes('expired') ? 'OTP expired. Please request a new OTP.' : 'Incorrect OTP. Please check and try again.'),
+      { statusCode: error.statusCode === 429 ? 429 : 401 }
+    );
+    publicError.providerMessage = error.providerMessage || error.message;
+    throw publicError;
+  }
 }
 
 function base64url(value) {
