@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>My Orders | RoyalWrap</title>
-  <meta name="description" content="View your RoyalWrap order history securely using the checkout email and mobile number.">
+  <meta name="description" content="View your RoyalWrap order history securely using mobile OTP verification.">
   <link rel="stylesheet" href="customer-orders.css">
   <script src="customer-orders.js" defer></script>
 </head>
@@ -18,14 +18,18 @@
     <section class="hero">
       <div class="eyebrow">Customer Order Centre</div>
       <h1>My Orders</h1>
-      <p>Enter the same email address and mobile number used during checkout to view your RoyalWrap order history.</p>
+      <p>Enter the same mobile number used during checkout. Verify the OTP to view all orders linked to that number.</p>
     </section>
 
     <section class="card">
       <form id="customerOrderForm" class="form-grid">
-        <label>Email<input type="email" name="email" required placeholder="Email used during checkout" autocomplete="email"></label>
-        <label>Mobile number<input type="tel" name="mobile" required maxlength="10" inputmode="numeric" pattern="[0-9]{10}" placeholder="10-digit mobile number" autocomplete="tel"></label>
-        <div class="full"><button class="primary" type="submit">Show My Orders</button><p class="note">Both details must exactly match your checkout information.</p></div>
+        <label class="full">Mobile number<input id="mobileInput" type="tel" name="mobile" required maxlength="10" inputmode="numeric" pattern="[6-9][0-9]{9}" placeholder="10-digit Indian mobile number" autocomplete="tel"></label>
+        <div class="full"><button class="primary" id="sendOtpBtn" type="button">Send OTP</button><p class="note">OTP will be sent only when this mobile number has a RoyalWrap order.</p></div>
+        <div class="otp-stage hidden" id="otpStage">
+          <label class="full">Enter OTP<input id="otpInput" type="tel" name="otp" maxlength="10" inputmode="numeric" placeholder="Enter OTP" autocomplete="one-time-code"></label>
+          <div><button class="primary" id="verifyOtpBtn" type="submit">Verify OTP & Show My Orders</button></div>
+          <div><button class="secondary-action" id="resendOtpBtn" type="button" disabled>Resend OTP</button></div>
+        </div>
       </form>
       <div class="message" id="orderMessage"></div>
     </section>
