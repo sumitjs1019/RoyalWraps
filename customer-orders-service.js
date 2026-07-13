@@ -8,7 +8,8 @@ const {
   sendOtp,
   checkOtp,
   createSessionToken,
-  verifySessionToken,
+  readSessionToken,
+  sessionTtlSeconds,
   limitOtpSend,
   limitOtpVerify
 } = require('./otp-service');
@@ -16,15 +17,17 @@ const {
 const dataDir = path.join(__dirname, 'data');
 const statusFile = path.join(dataDir, 'order-statuses.json');
 const shipmentsFile = path.join(dataDir, 'shiprocket-orders.json');
+const SESSION_COOKIE = 'rw_customer_session';
 const accessAttempts = new Map();
 let cache = { expiresAt: 0, orders: [] };
 
-function send(res, status, payload) {
+function send(res, status, payload, extraHeaders = {}) {
   const text = JSON.stringify(payload);
   res.writeHead(status, {
     'Content-Type': 'application/json; charset=utf-8',
     'Content-Length': Buffer.byteLength(text),
-    'Cache-Control': 'no-store'
+    'Cache-Control': 'no-store',
+    ...extraHeaders
   });
   res.end(text);
 }
@@ -76,17 +79,17 @@ function limitOrderAccess(req) {
     return;
   }
   entry.count += 1;
-  if (entry.count > 40) {
+  if (entry.count > 80) {
     throw Object.assign(new Error('Too many requests. Please try again after 15 minutes.'), { statusCode: 429 });
   }
 }
 
-function validPurpose(value) {
-  const purpose = String(value || '').toLowerCase();
-  if (!['list', 'track'].includes(purpose)) {
+function validMode(value) {
+  const mode = String(value || '').toLowerCase();
+  if (!['list', 'track'].includes(mode)) {
     throw Object.assign(new Error('Invalid order access type.'), { statusCode: 400 });
   }
-  return purpose;
+  return mode;
 }
 
 function validMobile(value) {
@@ -95,6 +98,56 @@ function validMobile(value) {
     throw Object.assign(new Error('Enter a valid 10-digit Indian mobile number.'), { statusCode: 400 });
   }
   return mobile;
+}
+
+function parseCookies(req) {
+  const result = {};
+  for (const part of String(req.headers.cookie || '').split(';')) {
+    const index = part.indexOf('=');
+    if (index < 1) continue;
+    const key = part.slice(0, index).trim();
+    const rawValue = part.slice(index + 1).trim();
+    try { result[key] = decodeURIComponent(rawValue); } catch { result[key] = rawValue; }
+  }
+  return result;
+}
+
+function isSecureRequest(req) {
+  const forwardedProto = String(req.headers['x-forwarded-proto'] || '').split(',')[0].trim();
+  return forwardedProto === 'https' || process.env.NODE_ENV === 'production';
+}
+
+function createCookie(req, token) {
+  return [
+    `${SESSION_COOKIE}=${encodeURIComponent(token)}`,
+    'Path=/',
+    'HttpOnly',
+    'SameSite=Lax',
+    `Max-Age=${sessionTtlSeconds()}`,
+    isSecureRequest(req) ? 'Secure' : ''
+  ].filter(Boolean).join('; ');
+}
+
+function clearCookie(req) {
+  return [
+    `${SESSION_COOKIE}=`,
+    'Path=/',
+    'HttpOnly',
+    'SameSite=Lax',
+    'Max-Age=0',
+    isSecureRequest(req) ? 'Secure' : ''
+  ].filter(Boolean).join('; ');
+}
+
+function sessionFromRequest(req) {
+  if (!otpConfigured()) return null;
+  const token = parseCookies(req)[SESSION_COOKIE];
+  return token ? readSessionToken(token) : null;
+}
+
+function maskedMobile(mobile) {
+  const clean = digits(mobile);
+  return clean ? `+91 ${clean.slice(0, 2)}******${clean.slice(-2)}` : '';
 }
 
 function razorpayRequest(apiPath) {
@@ -199,7 +252,6 @@ function publicOrder(order) {
     paymentMethod: order.paymentMethod,
     customer: {
       name: order.customer.name,
-      mobile: digits(order.customer.mobile),
       pincode: order.customer.pincode
     },
     items: order.items,
@@ -232,7 +284,6 @@ async function handleCustomerOtpSend(req, res) {
     if (req.method !== 'POST') return send(res, 405, { error: 'Method not allowed.' });
     if (!otpConfigured()) return send(res, 503, { error: 'Mobile OTP is not configured on the server.' });
     const input = await readBody(req);
-    const purpose = validPurpose(input.purpose);
     const mobile = validMobile(input.mobile);
     limitOtpSend(req, mobile);
 
@@ -242,12 +293,7 @@ async function handleCustomerOtpSend(req, res) {
     }
 
     await sendOtp(mobile);
-    return send(res, 200, {
-      success: true,
-      purpose,
-      mobile,
-      message: 'OTP sent to your mobile number.'
-    });
+    return send(res, 200, { success: true, message: 'OTP sent to your mobile number.' });
   } catch (error) {
     console.error('Customer OTP send failed:', error.providerMessage || error.message);
     return send(res, error.statusCode || 500, { error: error.message || 'Could not send OTP.' });
@@ -259,37 +305,60 @@ async function handleCustomerOtpVerify(req, res) {
     if (req.method !== 'POST') return send(res, 405, { error: 'Method not allowed.' });
     if (!otpConfigured()) return send(res, 503, { error: 'Mobile OTP is not configured on the server.' });
     const input = await readBody(req);
-    const purpose = validPurpose(input.purpose);
     const mobile = validMobile(input.mobile);
     limitOtpVerify(req, mobile);
+
+    const orders = await loadOrders(true);
+    if (!ordersForMobile(orders, mobile).length) {
+      return send(res, 404, { error: 'No RoyalWrap order was found for this mobile number.' });
+    }
+
     await checkOtp(mobile, input.code);
-    const token = createSessionToken(mobile, purpose);
+    const token = createSessionToken(mobile);
     return send(res, 200, {
       success: true,
-      mobile,
-      purpose,
-      token,
-      expiresInMinutes: Math.min(Math.max(Number(process.env.OTP_SESSION_TTL_MINUTES || 15), 5), 60)
-    });
+      mobile: maskedMobile(mobile),
+      expiresInDays: Math.round(sessionTtlSeconds() / 86400)
+    }, { 'Set-Cookie': createCookie(req, token) });
   } catch (error) {
     console.error('Customer OTP verification failed:', error.providerMessage || error.message);
     return send(res, error.statusCode || 500, { error: error.message || 'Could not verify OTP.' });
   }
 }
 
+function handleCustomerSession(req, res) {
+  try {
+    if (req.method !== 'GET') return send(res, 405, { error: 'Method not allowed.' });
+    const session = sessionFromRequest(req);
+    if (!session) return send(res, 200, { authenticated: false });
+    return send(res, 200, {
+      authenticated: true,
+      mobile: maskedMobile(session.mobile),
+      expiresAt: new Date(Number(session.exp) * 1000).toISOString()
+    });
+  } catch (error) {
+    return send(res, error.statusCode || 500, { error: error.message || 'Could not check login.' });
+  }
+}
+
+function handleCustomerLogout(req, res) {
+  if (req.method !== 'POST') return send(res, 405, { error: 'Method not allowed.' });
+  return send(res, 200, { success: true }, { 'Set-Cookie': clearCookie(req) });
+}
+
 async function handleCustomerOrders(req, res) {
   try {
     if (req.method !== 'POST') return send(res, 405, { error: 'Method not allowed.' });
     limitOrderAccess(req);
-    const input = await readBody(req);
-    const mode = validPurpose(input.mode);
-    const mobile = validMobile(input.mobile);
-    if (!verifySessionToken(input.token, mobile, mode)) {
-      return send(res, 401, { error: 'OTP verification expired or is invalid. Please verify your mobile number again.' });
+    const session = sessionFromRequest(req);
+    if (!session) {
+      return send(res, 401, { error: 'Please log in with your mobile number and OTP.' });
     }
 
+    const input = await readBody(req);
+    const mode = validMode(input.mode);
     const orders = await loadOrders(true);
-    const matches = ordersForMobile(orders, mobile).slice(0, 20);
+    const matches = ordersForMobile(orders, session.mobile).slice(0, 20);
     const result = matches.map(publicOrder);
 
     if (mode === 'track' && shiprocketConfigured()) {
@@ -303,7 +372,11 @@ async function handleCustomerOrders(req, res) {
       }));
     }
 
-    return send(res, 200, { orders: result, fetchedAt: new Date().toISOString() });
+    return send(res, 200, {
+      orders: result,
+      mobile: maskedMobile(session.mobile),
+      fetchedAt: new Date().toISOString()
+    });
   } catch (error) {
     return send(res, error.statusCode || 500, { error: error.message || 'Could not load orders.' });
   }
@@ -312,5 +385,7 @@ async function handleCustomerOrders(req, res) {
 module.exports = {
   handleCustomerOtpSend,
   handleCustomerOtpVerify,
+  handleCustomerSession,
+  handleCustomerLogout,
   handleCustomerOrders
 };
