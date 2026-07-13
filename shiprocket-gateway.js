@@ -3,7 +3,11 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { createPrepaidOrder, configured } = require('./shiprocket-service');
-const { handleCustomerOrders } = require('./customer-orders-service');
+const {
+  handleCustomerOtpSend,
+  handleCustomerOtpVerify,
+  handleCustomerOrders
+} = require('./customer-orders-service');
 require('dotenv').config();
 
 const publicPort = Number(process.env.PORT || 3000);
@@ -249,6 +253,8 @@ http.createServer(async (req, res) => {
   try {
     const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
     if (url.pathname.startsWith('/api/admin/shiprocket/')) return await shiprocketAdmin(req, res, url);
+    if (req.method === 'POST' && url.pathname === '/api/customer/otp/send') return await handleCustomerOtpSend(req, res);
+    if (req.method === 'POST' && url.pathname === '/api/customer/otp/verify') return await handleCustomerOtpVerify(req, res);
     if (req.method === 'POST' && url.pathname === '/api/customer/orders') return await handleCustomerOrders(req, res);
     if (req.method === 'POST' && url.pathname === '/api/create-order') return await createOrder(req, res);
     if (req.method === 'POST' && url.pathname === '/api/verify-payment') return await verify(req, res);
