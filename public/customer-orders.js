@@ -1,91 +1,34 @@
 (() => {
   const mode = document.body.dataset.orderMode;
-  const purpose = mode;
-  const form = document.getElementById('customerOrderForm');
-  const mobileInput = document.getElementById('mobileInput');
-  const otpInput = document.getElementById('otpInput');
-  const otpStage = document.getElementById('otpStage');
-  const sendOtpBtn = document.getElementById('sendOtpBtn');
-  const verifyOtpBtn = document.getElementById('verifyOtpBtn');
-  const resendOtpBtn = document.getElementById('resendOtpBtn');
+  const accountMobile = document.getElementById('accountMobile');
+  const logoutBtn = document.getElementById('logoutBtn');
+  const refreshBtn = document.getElementById('refreshOrdersBtn');
   const messageEl = document.getElementById('orderMessage');
   const resultEl = document.getElementById('orderResults');
-
-  if (!form || !mobileInput || !otpInput || !otpStage || !sendOtpBtn || !verifyOtpBtn || !resendOtpBtn || !messageEl || !resultEl || !['list', 'track'].includes(mode)) return;
+  if (!accountMobile || !logoutBtn || !messageEl || !resultEl || !['list', 'track'].includes(mode)) return;
 
   const stages = ['New', 'Processing', 'Printed', 'Shipped', 'Delivered'];
   const money = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 });
   const esc = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
-  let sentMobile = '';
-  let cooldownTimer = null;
 
   function setMessage(text, type = '') {
     messageEl.textContent = text;
     messageEl.className = `message ${type}`.trim();
   }
 
-  function cleanMobile() {
-    return mobileInput.value.replace(/\D/g, '').slice(0, 10);
+  function loginUrl() {
+    return `/login.html?return=${encodeURIComponent(location.pathname)}`;
   }
 
-  function validMobile(mobile) {
-    return /^[6-9]\d{9}$/.test(mobile);
-  }
-
-  function setCooldown(seconds = 60) {
-    clearInterval(cooldownTimer);
-    let remaining = seconds;
-    resendOtpBtn.disabled = true;
-    resendOtpBtn.textContent = `Resend OTP in ${remaining}s`;
-    cooldownTimer = setInterval(() => {
-      remaining -= 1;
-      if (remaining <= 0) {
-        clearInterval(cooldownTimer);
-        resendOtpBtn.disabled = false;
-        resendOtpBtn.textContent = 'Resend OTP';
-        return;
-      }
-      resendOtpBtn.textContent = `Resend OTP in ${remaining}s`;
-    }, 1000);
-  }
-
-  async function postJson(url, payload) {
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
+  async function requestJson(url, options = {}) {
+    const response = await fetch(url, options);
     const data = await response.json().catch(() => ({}));
+    if (response.status === 401) {
+      location.replace(loginUrl());
+      throw new Error('Login required.');
+    }
     if (!response.ok) throw new Error(data.error || 'Request failed. Please try again.');
     return data;
-  }
-
-  async function requestOtp() {
-    const mobile = cleanMobile();
-    mobileInput.value = mobile;
-    if (!validMobile(mobile)) {
-      setMessage('Enter a valid 10-digit Indian mobile number.', 'error');
-      mobileInput.focus();
-      return;
-    }
-
-    sendOtpBtn.disabled = true;
-    resendOtpBtn.disabled = true;
-    resultEl.innerHTML = '';
-    setMessage('Sending OTP to your mobile number...');
-    try {
-      await postJson('/api/customer/otp/send', { mobile, purpose });
-      sentMobile = mobile;
-      otpStage.classList.remove('hidden');
-      otpInput.value = '';
-      otpInput.focus();
-      setCooldown(60);
-      setMessage(`OTP sent to +91 ${mobile.slice(0, 2)}******${mobile.slice(-2)}.`, 'success');
-    } catch (error) {
-      setMessage(error.message, 'error');
-    } finally {
-      sendOtpBtn.disabled = false;
-    }
   }
 
   function renderStatus(order) {
@@ -121,67 +64,55 @@
     </article>`;
   }
 
-  async function loadOrders(mobile, token) {
-    setMessage(mode === 'list' ? 'Loading your orders...' : 'Loading tracking details...');
+  async function loadOrders() {
+    setMessage(mode === 'list' ? 'Loading your orders...' : 'Loading shipment tracking...');
     resultEl.innerHTML = '';
-    const data = await postJson('/api/customer/orders', { mode, mobile, token });
-    const orders = data.orders || [];
-    if (!orders.length) {
-      setMessage('No matching order found for this mobile number.', 'error');
-      resultEl.innerHTML = '<div class="empty">No order matched this mobile number.</div>';
-      return;
+    if (refreshBtn) refreshBtn.disabled = true;
+    try {
+      const data = await requestJson('/api/customer/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mode })
+      });
+      const orders = data.orders || [];
+      accountMobile.textContent = data.mobile || accountMobile.textContent;
+      if (!orders.length) {
+        setMessage('No orders were found for your logged-in mobile number.', 'error');
+        resultEl.innerHTML = '<div class="empty">No RoyalWrap order is linked to this account yet.</div>';
+        return;
+      }
+      setMessage(mode === 'list' ? `${orders.length} order${orders.length > 1 ? 's' : ''} found.` : `${orders.length} shipment${orders.length > 1 ? 's' : ''} found.`, 'success');
+      resultEl.innerHTML = orders.map(mode === 'list' ? renderSummaryOrder : renderTrackingOrder).join('');
+    } catch (error) {
+      if (error.message !== 'Login required.') setMessage(error.message, 'error');
+    } finally {
+      if (refreshBtn) refreshBtn.disabled = false;
     }
-    setMessage(mode === 'list' ? `${orders.length} order${orders.length > 1 ? 's' : ''} found.` : `${orders.length} shipment${orders.length > 1 ? 's' : ''} found.`, 'success');
-    resultEl.innerHTML = orders.map(mode === 'list' ? renderSummaryOrder : renderTrackingOrder).join('');
   }
 
-  async function verifyAndLoad() {
-    const mobile = cleanMobile();
-    const code = otpInput.value.replace(/\D/g, '').slice(0, 10);
-    if (!validMobile(mobile) || mobile !== sentMobile) {
-      setMessage('Request a fresh OTP for this mobile number.', 'error');
-      return;
-    }
-    if (!/^\d{4,10}$/.test(code)) {
-      setMessage('Enter the OTP sent to your mobile number.', 'error');
-      otpInput.focus();
-      return;
-    }
-
-    verifyOtpBtn.disabled = true;
-    setMessage('Verifying OTP...');
+  async function initialize() {
+    setMessage('Checking your login...');
     try {
-      const verified = await postJson('/api/customer/otp/verify', { mobile, code, purpose });
-      await loadOrders(mobile, verified.token);
+      const session = await requestJson('/api/customer/auth/session');
+      if (!session.authenticated) {
+        location.replace(loginUrl());
+        return;
+      }
+      accountMobile.textContent = session.mobile || 'Verified customer';
+      await loadOrders();
     } catch (error) {
       setMessage(error.message, 'error');
-    } finally {
-      verifyOtpBtn.disabled = false;
     }
   }
 
-  mobileInput.addEventListener('input', () => {
-    mobileInput.value = cleanMobile();
-    if (sentMobile && cleanMobile() !== sentMobile) {
-      sentMobile = '';
-      otpStage.classList.add('hidden');
-      otpInput.value = '';
-      clearInterval(cooldownTimer);
-      resendOtpBtn.disabled = true;
-      resendOtpBtn.textContent = 'Resend OTP';
-      resultEl.innerHTML = '';
-      setMessage('Mobile number changed. Request a new OTP.');
-    }
+  logoutBtn.addEventListener('click', async () => {
+    logoutBtn.disabled = true;
+    try {
+      await requestJson('/api/customer/auth/logout', { method: 'POST' });
+    } catch {}
+    location.replace('/login.html');
   });
 
-  otpInput.addEventListener('input', () => {
-    otpInput.value = otpInput.value.replace(/\D/g, '').slice(0, 10);
-  });
-
-  sendOtpBtn.addEventListener('click', requestOtp);
-  resendOtpBtn.addEventListener('click', requestOtp);
-  form.addEventListener('submit', (event) => {
-    event.preventDefault();
-    verifyAndLoad();
-  });
+  if (refreshBtn) refreshBtn.addEventListener('click', loadOrders);
+  initialize();
 })();
