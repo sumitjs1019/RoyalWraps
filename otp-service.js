@@ -159,35 +159,40 @@ function sign(value) {
     .digest('base64url');
 }
 
-function createSessionToken(mobile, purpose) {
+function sessionTtlSeconds() {
+  const days = Math.min(Math.max(Number(process.env.CUSTOMER_SESSION_TTL_DAYS || 7), 1), 30);
+  return Math.round(days * 24 * 60 * 60);
+}
+
+function createSessionToken(mobile) {
   assertConfigured();
   const now = Math.floor(Date.now() / 1000);
-  const ttlMinutes = Math.min(Math.max(Number(process.env.OTP_SESSION_TTL_MINUTES || 15), 5), 60);
   const payload = base64url(JSON.stringify({
     mobile: digits(mobile),
-    purpose,
+    purpose: 'customer',
     iat: now,
-    exp: now + (ttlMinutes * 60),
-    nonce: crypto.randomBytes(12).toString('hex')
+    exp: now + sessionTtlSeconds(),
+    nonce: crypto.randomBytes(16).toString('hex')
   }));
   return `${payload}.${sign(payload)}`;
 }
 
-function verifySessionToken(token, mobile, purpose) {
+function readSessionToken(token) {
   assertConfigured();
   const [payloadPart, signature] = String(token || '').split('.');
-  if (!payloadPart || !signature) return false;
+  if (!payloadPart || !signature) return null;
   const expected = sign(payloadPart);
   const left = Buffer.from(signature);
   const right = Buffer.from(expected);
-  if (left.length !== right.length || !crypto.timingSafeEqual(left, right)) return false;
+  if (left.length !== right.length || !crypto.timingSafeEqual(left, right)) return null;
   try {
     const payload = JSON.parse(Buffer.from(payloadPart, 'base64url').toString('utf8'));
-    return payload.mobile === digits(mobile)
-      && payload.purpose === purpose
-      && Number(payload.exp || 0) > Math.floor(Date.now() / 1000);
+    if (payload.purpose !== 'customer') return null;
+    if (!/^[6-9]\d{9}$/.test(String(payload.mobile || ''))) return null;
+    if (Number(payload.exp || 0) <= Math.floor(Date.now() / 1000)) return null;
+    return payload;
   } catch {
-    return false;
+    return null;
   }
 }
 
@@ -197,7 +202,8 @@ module.exports = {
   sendOtp,
   checkOtp,
   createSessionToken,
-  verifySessionToken,
+  readSessionToken,
+  sessionTtlSeconds,
   limitOtpSend,
   limitOtpVerify
 };
