@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Track Order | RoyalWrap</title>
-  <meta name="description" content="Track RoyalWrap shipments securely using mobile OTP verification.">
+  <meta name="description" content="Track all RoyalWrap shipments linked to your logged-in mobile number.">
   <link rel="stylesheet" href="customer-orders.css">
   <script src="customer-orders.js" defer></script>
 </head>
@@ -17,23 +17,17 @@
 
     <section class="hero">
       <div class="eyebrow">Shipment Tracking</div>
-      <h1>Track Order</h1>
-      <p>Enter the same mobile number used during checkout. Verify the OTP to see all linked orders and available courier tracking.</p>
+      <h1>Track Orders</h1>
+      <p>All shipments linked to your verified login mobile number appear automatically. Live courier updates become available after an AWB is generated.</p>
+      <div class="page-links"><a href="my-orders.html">View My Orders</a></div>
     </section>
 
-    <section class="card">
-      <form id="customerOrderForm" class="form-grid">
-        <label class="full">Mobile number<input id="mobileInput" type="tel" name="mobile" required maxlength="10" inputmode="numeric" pattern="[6-9][0-9]{9}" placeholder="10-digit Indian mobile number" autocomplete="tel"></label>
-        <div class="full"><button class="primary" id="sendOtpBtn" type="button">Send OTP</button><p class="note">Live courier updates appear after a courier is assigned and an AWB is generated in Shiprocket.</p></div>
-        <div class="otp-stage hidden" id="otpStage">
-          <label class="full">Enter OTP<input id="otpInput" type="tel" name="otp" maxlength="10" inputmode="numeric" placeholder="Enter OTP" autocomplete="one-time-code"></label>
-          <div><button class="primary" id="verifyOtpBtn" type="submit">Verify OTP & Track Orders</button></div>
-          <div><button class="secondary-action" id="resendOtpBtn" type="button" disabled>Resend OTP</button></div>
-        </div>
-      </form>
-      <div class="message" id="orderMessage"></div>
+    <section class="account-bar">
+      <div><span class="account-label">Logged in as</span><strong id="accountMobile">Checking login...</strong></div>
+      <div class="account-actions"><button class="secondary-action compact" id="refreshOrdersBtn" type="button">Refresh Tracking</button><button class="secondary-action compact" id="logoutBtn" type="button">Logout</button></div>
     </section>
 
+    <div class="message" id="orderMessage"></div>
     <div class="orders" id="orderResults"></div>
   </div>
 </body>
