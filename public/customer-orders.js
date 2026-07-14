@@ -14,6 +14,34 @@
   if (!accountMobile || !logoutBtn || !messageEl || !resultEl || !['list', 'track'].includes(mode)) return;
 
   const displayStages = ['Order Confirmed', 'Shipped', 'Delivered'];
+  const ORDER_IMAGE_STORAGE_KEY = 'royalwrap-order-images';
+  const productImagesByName = {
+    'Sapphire Marble Gold Skin': 'assets/products/sapphire-marble.png',
+    'Royal Midnight Palace Skin': 'assets/products/royal-midnight.png',
+    'Obsidian Diamond Armor Skin': 'assets/products/obsidian-diamond.png',
+    'Peacock Jewel Krishna Skin': 'assets/products/peacock-krishna.png',
+    'Bhagwan Ram Skin': 'assets/products/bhagwan-ram.jpeg',
+    'Ayodhya Mandir Heritage Skin': 'assets/products/ayodhya-mandir.png',
+    'Lotus Jaali Palace Skin': 'assets/products/lotus-jaali.png',
+    'Cosmic Galaxy Vortex Skin': 'assets/products/cosmic-galaxy.png',
+    'Honeycomb Copper Pro Skin': 'assets/products/honeycomb-pro.png',
+    'Luxury Quilted Leather Skin': 'assets/products/luxury-leather.png',
+    'Emerald Marble Gold Skin': 'assets/products/emerald-marble.png'
+  };
+  const productImagesById = {
+    'sapphire-marble': 'assets/products/sapphire-marble.png',
+    'royal-midnight': 'assets/products/royal-midnight.png',
+    'obsidian-diamond': 'assets/products/obsidian-diamond.png',
+    'peacock-krishna': 'assets/products/peacock-krishna.png',
+    'bhagwan-ram': 'assets/products/bhagwan-ram.jpeg',
+    'ayodhya-mandir': 'assets/products/ayodhya-mandir.png',
+    'lotus-jaali': 'assets/products/lotus-jaali.png',
+    'cosmic-galaxy': 'assets/products/cosmic-galaxy.png',
+    'honeycomb-pro': 'assets/products/honeycomb-pro.png',
+    'luxury-leather': 'assets/products/luxury-leather.png',
+    'emerald-marble': 'assets/products/emerald-marble.png'
+  };
+
   let loadedOrders = [];
 
   const esc = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({
@@ -81,12 +109,71 @@
     return labels[normalize(value)] || (value ? String(value) : 'Not available');
   }
 
-  function productTitle(order) {
-    return String(order.items || '').trim() || 'RoyalWrap mobile skin';
-  }
-
   function deliveryAddress(order) {
     return String(order.customer?.address || '').trim() || 'Delivery address is not available for this order.';
+  }
+
+  function safeImageUrl(value) {
+    const raw = String(value || '').trim();
+    if (!raw) return '';
+    if (/^(?:\.\/)?assets\//i.test(raw) || /^\/assets\//i.test(raw)) return raw.replace(/^\.\//, '');
+    try {
+      const url = new URL(raw, window.location.origin);
+      if (url.protocol === 'https:' && url.hostname === 'res.cloudinary.com') return url.href;
+    } catch {}
+    return '';
+  }
+
+  function savedOrderImages(orderId) {
+    try {
+      const all = JSON.parse(localStorage.getItem(ORDER_IMAGE_STORAGE_KEY) || '{}');
+      return Array.isArray(all?.[orderId]) ? all[orderId] : [];
+    } catch {
+      return [];
+    }
+  }
+
+  function cleanSelection(value) {
+    const parts = String(value || '').trim().split(/\s+/).filter(Boolean);
+    if (parts.length > 1 && normalize(parts[0]) === normalize(parts[1])) parts.shift();
+    return parts.join(' ');
+  }
+
+  function parseItemsText(value) {
+    const text = String(value || '').trim();
+    if (!text) return [];
+    const parsed = [];
+    const pattern = /(.+?)\s+\(([^()]*)\)\s*x\s*(\d+)(?:,\s*|$)/g;
+    let match;
+    while ((match = pattern.exec(text)) !== null) {
+      parsed.push({
+        name: match[1].trim(),
+        model: cleanSelection(match[2]),
+        qty: Math.max(1, Number.parseInt(match[3], 10) || 1)
+      });
+    }
+    return parsed.length ? parsed : [{ name: text, model: '', qty: 1 }];
+  }
+
+  function orderItems(order) {
+    const parsed = parseItemsText(order.items);
+    const saved = savedOrderImages(order.id);
+    return parsed.map((item, index) => {
+      const stored = saved.find((entry) => normalize(entry?.name) === normalize(item.name)) || saved[index] || {};
+      const id = String(stored.id || '').trim();
+      const name = String(stored.name || item.name || 'RoyalWrap mobile skin').trim();
+      const model = cleanSelection(stored.model || item.model);
+      const qty = Math.max(1, Number.parseInt(stored.qty ?? item.qty, 10) || 1);
+      const isCustom = id === 'custom-mobile-skin' || /custom\s+photo\s+mobile\s+skin/i.test(name);
+      const imageUrl = safeImageUrl(stored.imageUrl || stored.image)
+        || safeImageUrl(productImagesById[id])
+        || safeImageUrl(productImagesByName[name]);
+      return { id, name, model, qty, isCustom, imageUrl };
+    });
+  }
+
+  function productTitle(item) {
+    return `${item.name}${item.model ? ` (${item.model})` : ''} x ${item.qty}`;
   }
 
   function renderProgress(order) {
@@ -116,6 +203,33 @@
     return '<div class="product-actions"><a class="action-button primary" href="track-order.html">Track package</a></div>';
   }
 
+  function renderProductImage(item) {
+    if (!item.imageUrl) {
+      return '<div class="product-thumb product-thumb--missing" aria-label="Product image unavailable"><span>Photo</span></div>';
+    }
+    return `<div class="product-thumb ${item.isCustom ? 'product-thumb--custom' : ''}">
+      <img src="${esc(item.imageUrl)}" alt="${esc(item.name)}" loading="lazy" onerror="this.hidden=true;this.parentElement.classList.add('product-thumb--missing')">
+      <span>Photo</span>
+    </div>`;
+  }
+
+  function renderProductRows(order, options = {}) {
+    const items = orderItems(order);
+    const action = options.action || '';
+    const courier = options.courier || '';
+    return `<div class="order-products">
+      ${items.map((item, index) => `<div class="product-row ${(action && index === 0) ? '' : 'no-actions'}">
+        ${renderProductImage(item)}
+        <div class="product-info">
+          <h4>${esc(productTitle(item))}</h4>
+          ${courier && index === 0 ? `<p>Courier: ${esc(courier)}</p>` : ''}
+          <div class="delivery-note">${locationIcon()}<span>${esc(deliveryAddress(order))}</span></div>
+        </div>
+        ${index === 0 ? action : ''}
+      </div>`).join('')}
+    </div>`;
+  }
+
   function renderDetails(order) {
     const shipment = order.shipment || {};
     return `<details class="order-details">
@@ -132,17 +246,9 @@
   }
 
   function renderSummaryOrder(order) {
-    const action = renderMyOrderAction(order);
     return `<article class="order-card">
       <div class="order-card__body">
-        <div class="product-row ${action ? '' : 'no-actions'}">
-          <div class="product-thumb"><img src="assets/royalwraps-logo-icon.png" alt="RoyalWrap product"></div>
-          <div class="product-info">
-            <h4>${esc(productTitle(order))}</h4>
-            <div class="delivery-note">${locationIcon()}<span>${esc(deliveryAddress(order))}</span></div>
-          </div>
-          ${action}
-        </div>
+        ${renderProductRows(order, { action: renderMyOrderAction(order) })}
         ${renderProgress(order)}
         ${renderDetails(order)}
       </div>
@@ -183,14 +289,7 @@
     const shipment = order.shipment || {};
     return `<article class="order-card">
       <div class="order-card__body">
-        <div class="product-row no-actions">
-          <div class="product-thumb"><img src="assets/royalwraps-logo-icon.png" alt="RoyalWrap product"></div>
-          <div class="product-info">
-            <h4>${esc(productTitle(order))}</h4>
-            ${shipment.courierName ? `<p>Courier: ${esc(shipment.courierName)}</p>` : ''}
-            <div class="delivery-note">${locationIcon()}<span>${esc(deliveryAddress(order))}</span></div>
-          </div>
-        </div>
+        ${renderProductRows(order, { courier: shipment.courierName || '' })}
         ${renderProgress(order)}
         ${renderTrackingEvents(order)}
       </div>
