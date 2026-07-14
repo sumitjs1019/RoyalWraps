@@ -5,8 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#0b0a08">
   <title>My Orders | RoyalWrap</title>
-  <meta name="description" content="View and manage all RoyalWrap orders linked to your verified mobile number.">
+  <meta name="description" content="View confirmed RoyalWrap orders linked to your verified mobile number.">
   <link rel="stylesheet" href="customer-orders.css">
+  <script src="confirmed-orders-only.js" defer></script>
   <script src="customer-orders.js" defer></script>
 </head>
 <body data-order-mode="list">
@@ -25,7 +26,7 @@
       <div>
         <div class="eyebrow">Customer Account</div>
         <h1 id="pageTitle">Your Orders</h1>
-        <p>Check payment, production and delivery updates for every RoyalWrap order.</p>
+        <p>Only successfully paid and confirmed RoyalWrap orders are shown here.</p>
       </div>
       <nav class="order-tabs" aria-label="Order pages">
         <a class="active" href="my-orders.html" aria-current="page">My Orders</a>
@@ -43,29 +44,28 @@
 
     <section class="orders-toolbar" aria-label="Order filters">
       <div>
-        <h2>Order history</h2>
+        <h2>Confirmed order history</h2>
         <p id="orderCountText">Loading your orders…</p>
       </div>
       <div class="toolbar-controls">
         <label class="search-control">
-          <span class="sr-only">Search orders</span>
+          <span class="sr-only">Search confirmed orders</span>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m21 21-4.35-4.35m2.35-5.65a8 8 0 1 1-16 0 8 8 0 0 1 16 0Z"/></svg>
           <input id="orderSearch" type="search" placeholder="Search order or product" autocomplete="off">
         </label>
         <label class="select-control">
-          <span class="sr-only">Filter orders</span>
+          <span class="sr-only">Filter confirmed orders</span>
           <select id="orderFilter">
-            <option value="all">All orders</option>
+            <option value="all">All confirmed orders</option>
             <option value="active">Active orders</option>
             <option value="delivered">Delivered</option>
-            <option value="payment-failed">Payment failed</option>
           </select>
         </label>
       </div>
     </section>
 
     <div class="message" id="orderMessage" role="status" aria-live="polite"></div>
-    <section class="orders" id="orderResults" aria-label="Your orders"></section>
+    <section class="orders" id="orderResults" aria-label="Your confirmed orders"></section>
   </main>
 </body>
 </html>
