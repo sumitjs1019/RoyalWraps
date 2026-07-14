@@ -6,9 +6,10 @@
   <meta name="theme-color" content="#0b0a08">
   <title>Track Order | RoyalWrap</title>
   <meta name="description" content="Track RoyalWrap shipments linked to your verified mobile number.">
-  <link rel="stylesheet" href="customer-orders.css?v=20260714-5">
-  <link rel="stylesheet" href="order-ui-cleanup.css?v=20260714-5">
-  <script src="customer-orders.js?v=20260714-5" defer></script>
+  <link rel="stylesheet" href="customer-orders.css?v=20260714-6">
+  <link rel="stylesheet" href="order-ui-cleanup.css?v=20260714-6">
+  <script src="order-model-cleanup.js?v=20260714-6" defer></script>
+  <script src="customer-orders.js?v=20260714-6" defer></script>
 </head>
 <body data-order-mode="track">
   <header class="site-header">
@@ -30,11 +31,8 @@
       </nav>
     </section>
 
-    <section class="account-bar" aria-label="Signed-in account">
-      <div class="account-identity">
-        <span class="account-icon" aria-hidden="true">✓</span>
-        <div><span class="account-label">Signed in with verified mobile</span><strong id="accountMobile">Checking login...</strong></div>
-      </div>
+    <section class="account-bar account-bar--actions-only" aria-label="Account actions">
+      <span id="accountMobile" hidden></span>
       <div class="account-actions">
         <button class="outline-button" id="refreshOrdersBtn" type="button">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6v5h-5M4 18v-5h5M6.1 9a7 7 0 0 1 11.3-2.4L20 9M4 15l2.6 2.4A7 7 0 0 0 17.9 15"/></svg>
