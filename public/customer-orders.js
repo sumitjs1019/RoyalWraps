@@ -74,40 +74,6 @@
     return 'Order Confirmed';
   }
 
-  function statusView(order) {
-    const status = rawFulfillment(order);
-    if (status === 'Delivered') {
-      return {
-        title: 'Delivered',
-        description: 'Your RoyalWrap order has been delivered successfully.',
-        tone: 'success',
-        pill: 'Delivered'
-      };
-    }
-    if (status === 'Shipped') {
-      return {
-        title: 'Shipped',
-        description: 'Your package is on the way. Open Track Order for live courier updates.',
-        tone: 'success',
-        pill: 'Shipped'
-      };
-    }
-    if (status === 'Cancelled') {
-      return {
-        title: 'Order cancelled',
-        description: 'This order will not move forward for delivery.',
-        tone: 'danger',
-        pill: 'Cancelled'
-      };
-    }
-    return {
-      title: 'Order confirmed',
-      description: 'Your payment is confirmed and your order has been received.',
-      tone: 'success',
-      pill: 'Confirmed'
-    };
-  }
-
   function paymentMethodLabel(value) {
     const labels = {
       upi: 'UPI', card: 'Card', netbanking: 'Netbanking', wallet: 'Wallet', emi: 'EMI', paylater: 'Pay Later'
@@ -145,14 +111,9 @@
     return `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg>`;
   }
 
-  function renderActions(order, trackingPage = false) {
-    if (trackingPage) {
-      return '<div class="product-actions"><a class="action-button" href="my-orders.html">Order details</a></div>';
-    }
-    if (rawFulfillment(order) !== 'Delivered' && rawFulfillment(order) !== 'Cancelled') {
-      return '<div class="product-actions"><a class="action-button primary" href="track-order.html">Track package</a></div>';
-    }
-    return '';
+  function renderMyOrderAction(order) {
+    if (rawFulfillment(order) === 'Delivered' || rawFulfillment(order) === 'Cancelled') return '';
+    return '<div class="product-actions"><a class="action-button primary" href="track-order.html">Track package</a></div>';
   }
 
   function renderDetails(order) {
@@ -171,21 +132,16 @@
   }
 
   function renderSummaryOrder(order) {
-    const view = statusView(order);
-    const actions = renderActions(order);
+    const action = renderMyOrderAction(order);
     return `<article class="order-card">
       <div class="order-card__body">
-        <div class="status-summary">
-          <div class="status-copy ${view.tone}"><h3>${esc(view.title)}</h3><p>${esc(view.description)}</p></div>
-          <span class="status-pill ${view.tone}">${esc(view.pill)}</span>
-        </div>
-        <div class="product-row ${actions ? '' : 'no-actions'}">
+        <div class="product-row ${action ? '' : 'no-actions'}">
           <div class="product-thumb"><img src="assets/royalwraps-logo-icon.png" alt="RoyalWrap product"></div>
           <div class="product-info">
             <h4>${esc(productTitle(order))}</h4>
             <div class="delivery-note">${locationIcon()}<span>${esc(deliveryAddress(order))}</span></div>
           </div>
-          ${actions}
+          ${action}
         </div>
         ${renderProgress(order)}
         ${renderDetails(order)}
@@ -224,27 +180,19 @@
   }
 
   function renderTrackingOrder(order) {
-    const view = statusView(order);
     const shipment = order.shipment || {};
-    const actions = renderActions(order, true);
     return `<article class="order-card">
       <div class="order-card__body">
-        <div class="status-summary">
-          <div class="status-copy ${view.tone}"><h3>${esc(view.title)}</h3><p>${esc(view.description)}</p></div>
-          <span class="status-pill ${view.tone}">${esc(view.pill)}</span>
-        </div>
-        <div class="product-row">
+        <div class="product-row no-actions">
           <div class="product-thumb"><img src="assets/royalwraps-logo-icon.png" alt="RoyalWrap product"></div>
           <div class="product-info">
             <h4>${esc(productTitle(order))}</h4>
             ${shipment.courierName ? `<p>Courier: ${esc(shipment.courierName)}</p>` : ''}
             <div class="delivery-note">${locationIcon()}<span>${esc(deliveryAddress(order))}</span></div>
           </div>
-          ${actions}
         </div>
         ${renderProgress(order)}
         ${renderTrackingEvents(order)}
-        ${renderDetails(order)}
       </div>
     </article>`;
   }
