@@ -3,32 +3,59 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0b0a08">
   <title>Track Order | RoyalWrap</title>
-  <meta name="description" content="Track all RoyalWrap shipments linked to your logged-in mobile number.">
+  <meta name="description" content="Track RoyalWrap shipments linked to your verified mobile number.">
   <link rel="stylesheet" href="customer-orders.css">
   <script src="customer-orders.js" defer></script>
 </head>
 <body data-order-mode="track">
-  <div class="shell">
-    <div class="topbar">
-      <a class="brand" href="/"><img src="assets/royalwraps-logo-icon.png" alt="RoyalWrap logo"><span><strong>RoyalWrap</strong><small>Premium Mobile Skins</small></span></a>
-      <a class="back" href="/">← Continue Shopping</a>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="/" aria-label="RoyalWrap home">
+        <img src="assets/royalwraps-logo-icon.png" alt="">
+        <span><strong>RoyalWrap</strong><small>Premium Mobile Skins</small></span>
+      </a>
+      <a class="continue-link" href="/" aria-label="Continue shopping">Continue Shopping <span aria-hidden="true">→</span></a>
     </div>
+  </header>
 
-    <section class="hero">
-      <div class="eyebrow">Shipment Tracking</div>
-      <h1>Track Orders</h1>
-      <p>All shipments linked to your verified login mobile number appear automatically. Live courier updates become available after an AWB is generated.</p>
-      <div class="page-links"><a href="my-orders.html">View My Orders</a></div>
+  <main class="shell">
+    <section class="account-heading" aria-labelledby="pageTitle">
+      <div>
+        <div class="eyebrow">Shipment Tracking</div>
+        <h1 id="pageTitle">Track Your Orders</h1>
+        <p>See courier, AWB, estimated delivery and live movement updates in one place.</p>
+      </div>
+      <nav class="order-tabs" aria-label="Order pages">
+        <a href="my-orders.html">My Orders</a>
+        <a class="active" href="track-order.html" aria-current="page">Track Order</a>
+      </nav>
     </section>
 
-    <section class="account-bar">
-      <div><span class="account-label">Logged in as</span><strong id="accountMobile">Checking login...</strong></div>
-      <div class="account-actions"><button class="secondary-action compact" id="refreshOrdersBtn" type="button">Refresh Tracking</button><button class="secondary-action compact" id="logoutBtn" type="button">Logout</button></div>
+    <section class="account-bar" aria-label="Signed-in account">
+      <div class="account-identity">
+        <span class="account-icon" aria-hidden="true">✓</span>
+        <div><span class="account-label">Signed in with verified mobile</span><strong id="accountMobile">Checking login...</strong></div>
+      </div>
+      <div class="account-actions">
+        <button class="outline-button" id="refreshOrdersBtn" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6v5h-5M4 18v-5h5M6.1 9a7 7 0 0 1 11.3-2.4L20 9M4 15l2.6 2.4A7 7 0 0 0 17.9 15"/></svg>
+          Refresh
+        </button>
+        <button class="text-button" id="logoutBtn" type="button">Logout</button>
+      </div>
     </section>
 
-    <div class="message" id="orderMessage"></div>
-    <div class="orders" id="orderResults"></div>
-  </div>
+    <section class="tracking-intro">
+      <div class="tracking-intro-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M3 6h11v10H3zM14 9h4l3 3v4h-7zM7 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm11 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/></svg>
+      </div>
+      <div><h2>Live delivery updates</h2><p id="orderCountText">Loading trackable orders…</p></div>
+    </section>
+
+    <div class="message" id="orderMessage" role="status" aria-live="polite"></div>
+    <section class="orders" id="orderResults" aria-label="Shipment tracking"></section>
+  </main>
 </body>
 </html>
