@@ -3,30 +3,89 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title> Login</title>
-  <meta name="description" content="Log in to RoyalWrap with your checkout mobile number and OTP.">
+  <meta name="theme-color" content="#0c0b09">
+  <title>Customer Login | RoyalWrap</title>
+  <meta name="description" content="Securely log in to your RoyalWrap customer account with your checkout mobile number and OTP.">
   <link rel="stylesheet" href="customer-orders.css">
+  <link rel="stylesheet" href="customer-login.css">
   <script src="customer-login.js" defer></script>
 </head>
-<body>
-  <div class="shell login-shell">
-    <div class="topbar">
-      <a class="brand" href="/"><img src="assets/royalwraps-logo-icon.png" alt="RoyalWrap logo"><span><strong>RoyalWrap</strong><small>Premium Mobile Skins</small></span></a>
-      <a class="back" href="/">← Continue Shopping</a>
+<body class="login-page">
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="/" aria-label="RoyalWrap home">
+        <img src="assets/royalwraps-logo-icon.png" alt="">
+        <span><strong>RoyalWrap</strong><small>Premium Mobile Skins</small></span>
+      </a>
+      <a class="continue-link" href="/">Continue Shopping <span aria-hidden="true">→</span></a>
     </div>
-    <section class="card login-card">
-      <form id="loginForm" class="form-grid">
-        <h1>Login with Mobile OTP</h1>
-        <label class="full">Mobile Number<input id="mobileInput" type="tel" name="mobile" required maxlength="10" inputmode="numeric" pattern="[6-9][0-9]{9}" placeholder="Enter 10-digit mobile number" autocomplete="tel"></label>
-        <div class="full"><button class="primary" id="sendOtpBtn" type="button">Send OTP</button><p class="note">use the same mobile number when you ordered products</p></div>
-        <div class="otp-stage hidden" id="otpStage">
-          <label class="full">Enter OTP<input id="otpInput" type="tel" name="otp" maxlength="10" inputmode="numeric" placeholder="Enter OTP" autocomplete="one-time-code"></label>
-          <div><button class="primary" id="verifyOtpBtn" type="submit">Verify OTP & Login</button></div>
-          <div><button class="secondary-action" id="resendOtpBtn" type="button" disabled>Resend OTP</button></div>
-        </div>
-      </form>
-      <div class="message" id="loginMessage"></div>
+  </header>
+
+  <main class="login-main">
+    <section class="login-layout" aria-labelledby="loginTitle">
+      <div class="login-copy">
+        <div class="eyebrow">Secure Customer Account</div>
+        <h1>Track every RoyalWrap order in one place.</h1>
+        <p>Use the same mobile number entered during checkout. We will verify it with a one-time password before showing your orders and delivery updates.</p>
+
+        <ul class="login-benefits" aria-label="Account benefits">
+          <li><span class="benefit-icon" aria-hidden="true">✓</span><span>View payment, printing, shipping and delivery status.</span></li>
+          <li><span class="benefit-icon" aria-hidden="true">✓</span><span>See courier, AWB and live tracking updates after dispatch.</span></li>
+          <li><span class="benefit-icon" aria-hidden="true">✓</span><span>Your orders are shown only after secure OTP verification.</span></li>
+        </ul>
+      </div>
+
+      <div>
+        <section class="login-panel" aria-label="Mobile OTP login">
+          <div class="login-panel-top">
+            <span class="login-panel-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M10 5h4M10 18.5h4"/></svg>
+            </span>
+            <h2 id="loginTitle">Login with Mobile OTP</h2>
+            <p>Enter your checkout mobile number to access My Orders and Track Order.</p>
+          </div>
+
+          <form id="loginForm" class="login-form" novalidate>
+            <label class="field-label" for="mobileInput">
+              Mobile number
+              <span class="phone-control">
+                <span class="phone-prefix">+91</span>
+                <input id="mobileInput" type="tel" name="mobile" required maxlength="10" inputmode="numeric" pattern="[6-9][0-9]{9}" placeholder="Enter 10-digit number" autocomplete="tel">
+              </span>
+            </label>
+
+            <button class="login-primary" id="sendOtpBtn" type="button">Send OTP</button>
+
+            <p class="login-helper">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 10v6M12 7h.01"/></svg>
+              <span>Use the same mobile number that you used while placing the order.</span>
+            </p>
+
+            <div class="otp-stage hidden" id="otpStage">
+              <label class="field-label" for="otpInput">
+                Enter OTP
+                <span class="otp-control">
+                  <input id="otpInput" type="tel" name="otp" maxlength="10" inputmode="numeric" placeholder="Enter verification code" autocomplete="one-time-code">
+                </span>
+              </label>
+
+              <div class="otp-actions">
+                <button class="login-primary" id="verifyOtpBtn" type="submit">Verify & Login</button>
+                <button class="login-secondary" id="resendOtpBtn" type="button" disabled>Resend OTP</button>
+              </div>
+            </div>
+          </form>
+
+          <div class="message" id="loginMessage" role="status" aria-live="polite"></div>
+
+          <div class="secure-note">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+            <span>Secure verification. Your OTP should never be shared with anyone.</span>
+          </div>
+        </section>
+        <p class="login-footer-note">Having trouble logging in? Confirm that the order was placed using this mobile number.</p>
+      </div>
     </section>
-  </div>
+  </main>
 </body>
 </html>
