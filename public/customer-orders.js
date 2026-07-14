@@ -13,22 +13,16 @@
 
   if (!accountMobile || !logoutBtn || !messageEl || !resultEl || !['list', 'track'].includes(mode)) return;
 
-  const stages = ['New', 'Processing', 'Printed', 'Shipped', 'Delivered'];
-  const money = new Intl.NumberFormat('en-IN', {
-    style: 'currency',
-    currency: 'INR',
-    maximumFractionDigits: 0
-  });
-
+  const displayStages = ['Order Confirmed', 'Shipped', 'Delivered'];
   let loadedOrders = [];
 
   const esc = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#39;'
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
   }[char]));
+
+  function normalize(value) {
+    return String(value || '').trim().toLowerCase();
+  }
 
   function setMessage(text, type = '') {
     messageEl.textContent = text;
@@ -50,15 +44,12 @@
     return data;
   }
 
-  function formatDate(value, options = {}) {
+  function formatDate(value) {
     if (!value) return 'Date unavailable';
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return String(value);
     return new Intl.DateTimeFormat('en-IN', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-      ...options
+      day: '2-digit', month: 'short', year: 'numeric'
     }).format(date);
   }
 
@@ -67,139 +58,82 @@
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return String(value);
     return new Intl.DateTimeFormat('en-IN', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit'
+      day: '2-digit', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit'
     }).format(date);
-  }
-
-  function normalize(value) {
-    return String(value || '').trim().toLowerCase();
-  }
-
-  function isPaymentFailed(order) {
-    return ['failed', 'cancelled', 'canceled'].includes(normalize(order.paymentStatus));
   }
 
   function isPaid(order) {
     return ['captured', 'paid'].includes(normalize(order.paymentStatus));
   }
 
-  function normalizedFulfillment(order) {
-    const raw = String(order.fulfillmentStatus || 'New').trim();
-    const match = stages.find((stage) => stage.toLowerCase() === raw.toLowerCase());
-    if (match) return match;
-    if (['cancelled', 'canceled'].includes(raw.toLowerCase())) return 'Cancelled';
-    return 'New';
-  }
-
-  function paymentLabel(order) {
-    const status = normalize(order.paymentStatus);
-    if (isPaymentFailed(order)) return 'Failed';
-    if (isPaid(order)) return 'Paid';
-    if (status === 'authorized') return 'Authorized';
-    return 'Pending';
+  function rawFulfillment(order) {
+    const value = normalize(order.fulfillmentStatus || 'New');
+    if (value === 'delivered') return 'Delivered';
+    if (value === 'shipped') return 'Shipped';
+    if (['cancelled', 'canceled'].includes(value)) return 'Cancelled';
+    return 'Order Confirmed';
   }
 
   function statusView(order) {
-    if (isPaymentFailed(order)) {
+    const status = rawFulfillment(order);
+    if (status === 'Delivered') {
       return {
-        title: 'Payment failed',
-        description: 'This payment was not completed, so the order was not confirmed.',
-        tone: 'danger',
-        pill: 'Action needed'
-      };
-    }
-
-    if (!isPaid(order)) {
-      return {
-        title: 'Payment pending',
-        description: 'We are waiting for payment confirmation. Fulfilment will start after payment is captured.',
-        tone: 'warning',
-        pill: 'Pending'
-      };
-    }
-
-    const status = normalizedFulfillment(order);
-    const views = {
-      New: {
-        title: 'Order confirmed',
-        description: 'Your payment is confirmed and the order has been received.',
-        tone: 'success',
-        pill: 'Confirmed'
-      },
-      Processing: {
-        title: 'Preparing your order',
-        description: 'Your mobile skin details are being checked before printing.',
-        tone: 'info',
-        pill: 'Processing'
-      },
-      Printed: {
-        title: 'Your skin is printed',
-        description: 'Quality checks and secure packing are in progress.',
-        tone: 'info',
-        pill: 'Printed'
-      },
-      Shipped: {
-        title: 'Your order is on the way',
-        description: 'The courier has picked up your package. Track the latest movement below.',
-        tone: 'success',
-        pill: 'Shipped'
-      },
-      Delivered: {
         title: 'Delivered',
         description: 'Your RoyalWrap order has been delivered successfully.',
         tone: 'success',
         pill: 'Delivered'
-      },
-      Cancelled: {
+      };
+    }
+    if (status === 'Shipped') {
+      return {
+        title: 'Shipped',
+        description: 'Your package is on the way. Open Track Order for live courier updates.',
+        tone: 'success',
+        pill: 'Shipped'
+      };
+    }
+    if (status === 'Cancelled') {
+      return {
         title: 'Order cancelled',
-        description: 'This order will not move forward for fulfilment.',
+        description: 'This order will not move forward for delivery.',
         tone: 'danger',
         pill: 'Cancelled'
-      }
+      };
+    }
+    return {
+      title: 'Order confirmed',
+      description: 'Your payment is confirmed and your order has been received.',
+      tone: 'success',
+      pill: 'Confirmed'
     };
-    return views[status] || views.New;
   }
 
   function paymentMethodLabel(value) {
-    const method = normalize(value);
     const labels = {
-      upi: 'UPI',
-      card: 'Card',
-      netbanking: 'Netbanking',
-      wallet: 'Wallet',
-      emi: 'EMI',
-      paylater: 'Pay Later'
+      upi: 'UPI', card: 'Card', netbanking: 'Netbanking', wallet: 'Wallet', emi: 'EMI', paylater: 'Pay Later'
     };
-    return labels[method] || (value ? String(value) : 'Not available');
-  }
-
-  function shortOrderId(order) {
-    const id = String(order.id || order.receipt || '');
-    if (id.length <= 14) return id;
-    return `…${id.slice(-12)}`;
+    return labels[normalize(value)] || (value ? String(value) : 'Not available');
   }
 
   function productTitle(order) {
-    const items = String(order.items || '').trim();
-    return items || 'RoyalWrap mobile skin';
+    return String(order.items || '').trim() || 'RoyalWrap mobile skin';
+  }
+
+  function deliveryAddress(order) {
+    return String(order.customer?.address || '').trim() || 'Delivery address is not available for this order.';
   }
 
   function renderProgress(order) {
-    if (!isPaid(order) || normalizedFulfillment(order) === 'Cancelled') return '';
-    const current = normalizedFulfillment(order);
-    const currentIndex = Math.max(0, stages.indexOf(current));
-    const fill = currentIndex === 0 ? 0 : (currentIndex / (stages.length - 1)) * 80;
+    if (!isPaid(order) || rawFulfillment(order) === 'Cancelled') return '';
+    const current = rawFulfillment(order);
+    const currentIndex = Math.max(0, displayStages.indexOf(current));
+    const fill = (currentIndex / (displayStages.length - 1)) * (2 / 3) * 100;
 
     return `<div class="order-progress" aria-label="Order progress: ${esc(current)}">
       <span class="progress-fill" style="width:${fill}%"></span>
-      ${stages.map((stage, index) => {
+      ${displayStages.map((stage, index) => {
         const done = index <= currentIndex;
-        const currentClass = index === currentIndex ? ' current' : '';
-        return `<div class="progress-step ${done ? 'done' : ''}${currentClass}">
+        return `<div class="progress-step ${done ? 'done' : ''}${index === currentIndex ? ' current' : ''}">
           <span class="progress-dot" aria-hidden="true">${done ? '✓' : ''}</span>
           <span>${esc(stage)}</span>
         </div>`;
@@ -212,30 +146,13 @@
   }
 
   function renderActions(order, trackingPage = false) {
-    if (isPaymentFailed(order)) {
-      return `<div class="product-actions"><a class="action-button primary single" href="/">Place order again</a></div>`;
-    }
-
-    const fulfillment = normalizedFulfillment(order);
     if (trackingPage) {
-      return `<div class="product-actions"><a class="action-button" href="my-orders.html">Order details</a><a class="action-button primary" href="/">Shop again</a></div>`;
+      return '<div class="product-actions"><a class="action-button" href="my-orders.html">Order details</a></div>';
     }
-
-    if (isPaid(order) && !['Delivered', 'Cancelled'].includes(fulfillment)) {
-      return `<div class="product-actions"><a class="action-button primary" href="track-order.html">Track package</a><a class="action-button" href="/">Shop again</a></div>`;
+    if (rawFulfillment(order) !== 'Delivered' && rawFulfillment(order) !== 'Cancelled') {
+      return '<div class="product-actions"><a class="action-button primary" href="track-order.html">Track package</a></div>';
     }
-
-    return `<div class="product-actions"><a class="action-button primary single" href="/">Buy again</a></div>`;
-  }
-
-  function renderHeader(order) {
-    const payment = paymentLabel(order);
-    return `<div class="order-card__top">
-      <div class="order-meta-block"><span>Order placed</span><time datetime="${esc(order.createdAt || '')}">${esc(formatDate(order.createdAt))}</time></div>
-      <div class="order-meta-block"><span>Total</span><strong>${esc(money.format(Number(order.amountPaid || 0)))}</strong></div>
-      <div class="order-meta-block"><span>Payment</span><strong>${esc(payment)}</strong></div>
-      <div class="order-meta-block order-number"><span>Order #</span><strong title="${esc(order.id || '')}">${esc(shortOrderId(order))}</strong></div>
-    </div>`;
+    return '';
   }
 
   function renderDetails(order) {
@@ -245,7 +162,7 @@
       <div class="details-grid">
         <div class="detail-box"><span>Full order ID</span><strong>${esc(order.id || 'Unavailable')}</strong></div>
         <div class="detail-box"><span>Payment method</span><strong>${esc(paymentMethodLabel(order.paymentMethod))}</strong></div>
-        <div class="detail-box"><span>Delivery PIN</span><strong>${esc(order.customer?.pincode || 'Not available')}</strong></div>
+        <div class="detail-box"><span>Delivery address</span><strong>${esc(deliveryAddress(order))}</strong></div>
         <div class="detail-box"><span>Courier</span><strong>${esc(shipment.courierName || 'Not assigned')}</strong></div>
         <div class="detail-box"><span>AWB number</span><strong>${esc(shipment.awbCode || 'Not assigned')}</strong></div>
         <div class="detail-box"><span>Last updated</span><strong>${esc(formatDateTime(shipment.updatedAt || order.statusUpdatedAt) || 'Not available')}</strong></div>
@@ -255,26 +172,20 @@
 
   function renderSummaryOrder(order) {
     const view = statusView(order);
-    const fulfillment = normalizedFulfillment(order);
-    const deliveryText = order.customer?.pincode
-      ? `Delivery location PIN ${esc(order.customer.pincode)}`
-      : 'Delivery location will appear after confirmation';
-
+    const actions = renderActions(order);
     return `<article class="order-card">
-      ${renderHeader(order)}
       <div class="order-card__body">
         <div class="status-summary">
           <div class="status-copy ${view.tone}"><h3>${esc(view.title)}</h3><p>${esc(view.description)}</p></div>
           <span class="status-pill ${view.tone}">${esc(view.pill)}</span>
         </div>
-        <div class="product-row">
+        <div class="product-row ${actions ? '' : 'no-actions'}">
           <div class="product-thumb"><img src="assets/royalwraps-logo-icon.png" alt="RoyalWrap product"></div>
           <div class="product-info">
             <h4>${esc(productTitle(order))}</h4>
-            <p>${isPaymentFailed(order) ? 'Payment was unsuccessful. No product was sent for fulfilment.' : `Current order stage: ${esc(fulfillment)}`}</p>
-            <div class="delivery-note">${locationIcon()}<span>${deliveryText}</span></div>
+            <div class="delivery-note">${locationIcon()}<span>${esc(deliveryAddress(order))}</span></div>
           </div>
-          ${renderActions(order)}
+          ${actions}
         </div>
         ${renderProgress(order)}
         ${renderDetails(order)}
@@ -288,7 +199,7 @@
     const activities = Array.isArray(live.activities) ? live.activities : [];
 
     if (!shipment.awbCode) {
-      return `<div class="no-tracking"><span class="no-tracking-icon" aria-hidden="true">i</span><div><strong>Tracking is not available yet</strong>Courier and AWB details will appear here after your packed order is handed over for shipping.</div></div>`;
+      return '<div class="no-tracking"><span class="no-tracking-icon" aria-hidden="true">i</span><div><strong>Tracking is not available yet</strong>Courier and AWB details will appear after your confirmed order is shipped.</div></div>';
     }
 
     const events = activities.length ? activities : [{
@@ -314,14 +225,9 @@
 
   function renderTrackingOrder(order) {
     const view = statusView(order);
-    const fulfillment = normalizedFulfillment(order);
     const shipment = order.shipment || {};
-    const deliveryText = order.customer?.pincode
-      ? `Delivering to PIN ${esc(order.customer.pincode)}`
-      : 'Delivery PIN not available';
-
+    const actions = renderActions(order, true);
     return `<article class="order-card">
-      ${renderHeader(order)}
       <div class="order-card__body">
         <div class="status-summary">
           <div class="status-copy ${view.tone}"><h3>${esc(view.title)}</h3><p>${esc(view.description)}</p></div>
@@ -331,10 +237,10 @@
           <div class="product-thumb"><img src="assets/royalwraps-logo-icon.png" alt="RoyalWrap product"></div>
           <div class="product-info">
             <h4>${esc(productTitle(order))}</h4>
-            <p>${shipment.courierName ? `Courier: ${esc(shipment.courierName)}` : `Current order stage: ${esc(fulfillment)}`}</p>
-            <div class="delivery-note">${locationIcon()}<span>${deliveryText}</span></div>
+            ${shipment.courierName ? `<p>Courier: ${esc(shipment.courierName)}</p>` : ''}
+            <div class="delivery-note">${locationIcon()}<span>${esc(deliveryAddress(order))}</span></div>
           </div>
-          ${renderActions(order, true)}
+          ${actions}
         </div>
         ${renderProgress(order)}
         ${renderTrackingEvents(order)}
@@ -343,19 +249,16 @@
     </article>`;
   }
 
-  function renderEmpty(title, text, showShopButton = true) {
-    return `<div class="empty"><div class="empty-icon" aria-hidden="true">⌁</div><h3>${esc(title)}</h3><p>${esc(text)}</p>${showShopButton ? '<a class="action-button primary" href="/">Continue shopping</a>' : ''}</div>`;
+  function renderEmpty(title, text) {
+    return `<div class="empty"><div class="empty-icon" aria-hidden="true">⌁</div><h3>${esc(title)}</h3><p>${esc(text)}</p></div>`;
   }
 
   function renderSkeletons() {
-    resultEl.innerHTML = Array.from({ length: 2 }, () => `<div class="skeleton-card" aria-hidden="true"><div class="skeleton-top"></div><div class="skeleton-body"><div class="skeleton-body-line"></div><div class="skeleton-product"></div></div></div>`).join('');
+    resultEl.innerHTML = Array.from({ length: 2 }, () => '<div class="skeleton-card" aria-hidden="true"><div class="skeleton-body"><div class="skeleton-body-line"></div><div class="skeleton-product"></div></div></div>').join('');
   }
 
   function matchesFilter(order, filter) {
-    if (filter === 'all') return true;
-    if (filter === 'payment-failed') return isPaymentFailed(order);
-    if (filter === 'delivered') return normalizedFulfillment(order) === 'Delivered' && isPaid(order);
-    if (filter === 'active') return isPaid(order) && !['Delivered', 'Cancelled'].includes(normalizedFulfillment(order));
+    if (filter === 'delivered') return rawFulfillment(order) === 'Delivered';
     return true;
   }
 
@@ -364,18 +267,15 @@
     const query = normalize(searchInput?.value);
     const filter = filterSelect?.value || 'all';
     const filtered = loadedOrders.filter((order) => {
-      const haystack = normalize([order.id, order.receipt, order.items, order.paymentStatus, order.fulfillmentStatus].join(' '));
+      const haystack = normalize([order.id, order.receipt, order.items, order.fulfillmentStatus, order.customer?.address].join(' '));
       return (!query || haystack.includes(query)) && matchesFilter(order, filter);
     });
 
     if (countEl) countEl.textContent = `${filtered.length} of ${loadedOrders.length} order${loadedOrders.length === 1 ? '' : 's'}`;
     setMessage('');
-
-    if (!filtered.length) {
-      resultEl.innerHTML = renderEmpty('No matching orders', 'Try another search or choose a different order filter.', false);
-      return;
-    }
-    resultEl.innerHTML = filtered.map(renderSummaryOrder).join('');
+    resultEl.innerHTML = filtered.length
+      ? filtered.map(renderSummaryOrder).join('')
+      : renderEmpty('No matching orders', 'Try another search or choose a different filter.');
   }
 
   async function loadOrders() {
@@ -391,24 +291,22 @@
       });
 
       accountMobile.textContent = data.mobile || accountMobile.textContent;
-      loadedOrders = Array.isArray(data.orders) ? data.orders : [];
+      loadedOrders = (Array.isArray(data.orders) ? data.orders : []).filter(isPaid);
 
       if (mode === 'track') {
-        const trackable = loadedOrders.filter((order) => isPaid(order) && normalizedFulfillment(order) !== 'Cancelled');
-        if (countEl) countEl.textContent = `${trackable.length} trackable order${trackable.length === 1 ? '' : 's'}`;
+        const trackable = loadedOrders.filter((order) => rawFulfillment(order) !== 'Cancelled');
+        if (countEl) countEl.textContent = `${trackable.length} order${trackable.length === 1 ? '' : 's'}`;
         setMessage('');
-        if (!trackable.length) {
-          resultEl.innerHTML = renderEmpty('No trackable orders yet', 'Paid orders will appear here as soon as they are confirmed.');
-          return;
-        }
-        resultEl.innerHTML = trackable.map(renderTrackingOrder).join('');
+        resultEl.innerHTML = trackable.length
+          ? trackable.map(renderTrackingOrder).join('')
+          : renderEmpty('No trackable orders yet', 'Confirmed orders will appear here automatically.');
         return;
       }
 
       if (!loadedOrders.length) {
         if (countEl) countEl.textContent = '0 orders';
         setMessage('');
-        resultEl.innerHTML = renderEmpty('No orders found', 'Orders placed with this verified mobile number will appear here automatically.');
+        resultEl.innerHTML = renderEmpty('No confirmed orders found', 'Successfully paid orders placed with this mobile number will appear here.');
         return;
       }
 
