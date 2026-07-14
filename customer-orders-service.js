@@ -184,6 +184,16 @@ function razorpayRequest(apiPath) {
   });
 }
 
+function cleanAddress(value, pincode) {
+  let address = String(value || '').trim();
+  if (!address) return '';
+  const cleanPin = String(pincode || '').replace(/\D/g, '');
+  if (cleanPin) {
+    address = address.replace(new RegExp(`,?\\s*PIN\\s*:?\\s*${cleanPin}\\s*$`, 'i'), '');
+  }
+  return address.replace(/,\s*$/, '').trim();
+}
+
 async function loadOrders(force = false) {
   if (!force && Date.now() < cache.expiresAt) return cache.orders;
   const [orderData, paymentData] = await Promise.all([
@@ -193,6 +203,7 @@ async function loadOrders(force = false) {
   const statuses = read(statusFile, {});
   const shipments = read(shipmentsFile, {});
   const payments = new Map();
+
   for (const payment of paymentData.items || []) {
     if (!payment.order_id) continue;
     const current = payments.get(payment.order_id);
@@ -200,11 +211,16 @@ async function loadOrders(force = false) {
       payments.set(payment.order_id, payment);
     }
   }
+
   cache.orders = (orderData.items || []).map((order) => {
     const payment = payments.get(order.id) || {};
     const notes = order.notes || {};
+    const paymentNotes = payment.notes || {};
     const shipment = shipments[order.id] || {};
     const created = Number(order.created_at || payment.created_at || 0) * 1000;
+    const pincode = notes.customer_pincode || paymentNotes.customer_pincode || '';
+    const address = cleanAddress(notes.customer_address || paymentNotes.customer_address || '', pincode);
+
     return {
       id: order.id,
       receipt: order.receipt || '',
@@ -214,12 +230,13 @@ async function loadOrders(force = false) {
       paymentStatus: payment.status || order.status || 'created',
       paymentMethod: payment.method || '',
       customer: {
-        name: notes.customer_name || payment.notes?.customer_name || '',
+        name: notes.customer_name || paymentNotes.customer_name || '',
         email: notes.customer_email || payment.email || '',
         mobile: notes.customer_mobile || payment.contact || '',
-        pincode: notes.customer_pincode || ''
+        pincode,
+        address
       },
-      items: notes.items || '',
+      items: notes.items || paymentNotes.items || '',
       fulfillmentStatus: statuses[order.id]?.status || 'New',
       statusUpdatedAt: statuses[order.id]?.updatedAt || null,
       shipment: {
@@ -233,12 +250,17 @@ async function loadOrders(force = false) {
       }
     };
   }).sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
   cache.expiresAt = Date.now() + 30000;
   return cache.orders;
 }
 
 function ordersForMobile(orders, mobile) {
   return orders.filter((order) => digits(order.customer.mobile) === mobile);
+}
+
+function isConfirmedOrder(order) {
+  return ['captured', 'paid'].includes(String(order.paymentStatus || '').toLowerCase());
 }
 
 function publicOrder(order) {
@@ -252,7 +274,8 @@ function publicOrder(order) {
     paymentMethod: order.paymentMethod,
     customer: {
       name: order.customer.name,
-      pincode: order.customer.pincode
+      pincode: order.customer.pincode,
+      address: order.customer.address
     },
     items: order.items,
     fulfillmentStatus: order.fulfillmentStatus,
@@ -286,12 +309,10 @@ async function handleCustomerOtpSend(req, res) {
     const input = await readBody(req);
     const mobile = validMobile(input.mobile);
     limitOtpSend(req, mobile);
-
     const orders = await loadOrders(true);
     if (!ordersForMobile(orders, mobile).length) {
       return send(res, 404, { error: 'No RoyalWrap order was found for this mobile number.' });
     }
-
     await sendOtp(mobile);
     return send(res, 200, { success: true, message: 'OTP sent to your mobile number.' });
   } catch (error) {
@@ -307,12 +328,10 @@ async function handleCustomerOtpVerify(req, res) {
     const input = await readBody(req);
     const mobile = validMobile(input.mobile);
     limitOtpVerify(req, mobile);
-
     const orders = await loadOrders(true);
     if (!ordersForMobile(orders, mobile).length) {
       return send(res, 404, { error: 'No RoyalWrap order was found for this mobile number.' });
     }
-
     await checkOtp(mobile, input.code);
     const token = createSessionToken(mobile);
     return send(res, 200, {
@@ -351,14 +370,14 @@ async function handleCustomerOrders(req, res) {
     if (req.method !== 'POST') return send(res, 405, { error: 'Method not allowed.' });
     limitOrderAccess(req);
     const session = sessionFromRequest(req);
-    if (!session) {
-      return send(res, 401, { error: 'Please log in with your mobile number and OTP.' });
-    }
+    if (!session) return send(res, 401, { error: 'Please log in with your mobile number and OTP.' });
 
     const input = await readBody(req);
     const mode = validMode(input.mode);
     const orders = await loadOrders(true);
-    const matches = ordersForMobile(orders, session.mobile).slice(0, 20);
+    const matches = ordersForMobile(orders, session.mobile)
+      .filter(isConfirmedOrder)
+      .slice(0, 20);
     const result = matches.map(publicOrder);
 
     if (mode === 'track' && shiprocketConfigured()) {
