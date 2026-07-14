@@ -1,0 +1,40 @@
+/* Simplified three-stage customer order timeline */
+.order-progress {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.order-progress::before {
+  left: 16.666%;
+  right: 16.666%;
+}
+
+.progress-fill {
+  left: 16.666%;
+}
+
+.product-row.no-actions {
+  grid-template-columns: 86px minmax(0, 1fr);
+}
+
+.delivery-note {
+  align-items: flex-start;
+}
+
+.delivery-note span {
+  overflow-wrap: anywhere;
+}
+
+.skeleton-top {
+  display: none;
+}
+
+@media (max-width: 620px) {
+  .order-progress {
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .product-row.no-actions {
+    grid-template-columns: 64px minmax(0, 1fr);
+  }
+}
