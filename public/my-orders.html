@@ -6,10 +6,10 @@
   <meta name="theme-color" content="#0b0a08">
   <title>My Orders | RoyalWrap</title>
   <meta name="description" content="View confirmed RoyalWrap orders linked to your verified mobile number.">
-  <link rel="stylesheet" href="customer-orders.css?v=20260714-6">
-  <link rel="stylesheet" href="order-ui-cleanup.css?v=20260714-6">
-  <script src="order-model-cleanup.js?v=20260714-6" defer></script>
-  <script src="customer-orders.js?v=20260714-6" defer></script>
+  <link rel="stylesheet" href="customer-orders.css?v=20260714-7">
+  <link rel="stylesheet" href="order-ui-cleanup.css?v=20260714-7">
+  <script src="order-model-cleanup.js?v=20260714-7" defer></script>
+  <script src="customer-orders.js?v=20260714-7" defer></script>
 </head>
 <body data-order-mode="list">
   <header class="site-header">
@@ -30,9 +30,9 @@
       </nav>
     </section>
 
-    <section class="account-bar account-bar--actions-only" aria-label="Account actions">
+    <section class="account-bar account-bar--actions-only" aria-label="Account actions" hidden>
       <span id="accountMobile" hidden></span>
-      <button class="text-button" id="logoutBtn" type="button">Logout</button>
+      <button class="text-button" id="logoutBtn" type="button" hidden>Logout</button>
     </section>
 
     <section class="orders-toolbar" aria-label="Order filters">
