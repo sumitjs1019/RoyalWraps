@@ -24,6 +24,20 @@
   overflow-wrap: anywhere;
 }
 
+.account-bar--actions-only {
+  justify-content: flex-end;
+  min-height: 44px;
+  margin-bottom: 18px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.account-bar--actions-only .account-actions {
+  margin-left: auto;
+}
+
 .skeleton-top {
   display: none;
 }
@@ -36,5 +50,9 @@
 
   .product-row.no-actions {
     grid-template-columns: 64px minmax(0, 1fr);
+  }
+
+  .account-bar--actions-only {
+    min-height: 40px;
   }
 }
