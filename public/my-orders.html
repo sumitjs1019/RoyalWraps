@@ -23,28 +23,15 @@
 
   <main class="shell">
     <section class="account-heading" aria-labelledby="pageTitle">
-      <div>
-        <div class="eyebrow">Customer Account</div>
-        <h1 id="pageTitle">Your Orders</h1>
-        <p>Only successfully paid and confirmed RoyalWrap orders are shown here.</p>
-      </div>
       <nav class="order-tabs" aria-label="Order pages">
         <a class="active" href="my-orders.html" aria-current="page">My Orders</a>
         <a href="track-order.html">Track Order</a>
       </nav>
     </section>
 
-    <section class="account-bar" aria-label="Signed-in account">
-      <div class="account-identity">
-        <span class="account-icon" aria-hidden="true">✓</span>
-        <div><span class="account-label">Signed in with verified mobile</span><strong id="accountMobile">Checking login...</strong></div>
-      </div>
-      <button class="text-button" id="logoutBtn" type="button">Logout</button>
-    </section>
-
     <section class="orders-toolbar" aria-label="Order filters">
       <div>
-        <h2>Confirmed order history</h2>
+        <h2>Order history</h2>
         <p id="orderCountText">Loading your orders…</p>
       </div>
       <div class="toolbar-controls">
@@ -56,8 +43,7 @@
         <label class="select-control">
           <span class="sr-only">Filter confirmed orders</span>
           <select id="orderFilter">
-            <option value="all">All confirmed orders</option>
-            <option value="active">Active orders</option>
+            <option value="all">All orders</option>
             <option value="delivered">Delivered</option>
           </select>
         </label>
