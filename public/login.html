@@ -6,9 +6,9 @@
   <meta name="theme-color" content="#0c0b09">
   <title>Customer Login | RoyalWrap</title>
   <meta name="description" content="Securely log in to your RoyalWrap customer account with your checkout mobile number and OTP.">
-  <link rel="stylesheet" href="customer-orders.css">
-  <link rel="stylesheet" href="customer-login.css">
-  <script src="customer-login.js" defer></script>
+  <link rel="stylesheet" href="customer-orders.css?v=20260714-2">
+  <link rel="stylesheet" href="customer-login.css?v=20260714-2">
+  <script src="customer-login.js?v=20260714-2" defer></script>
 </head>
 <body class="login-page">
   <header class="site-header">
@@ -24,6 +24,16 @@
   <main class="login-main">
     <section class="login-layout" aria-labelledby="loginTitle">
       <div class="login-copy">
+        <div class="eyebrow">Secure Customer Account</div>
+        <h1>View and track your confirmed RoyalWrap orders.</h1>
+        <p>Sign in with the same mobile number used during checkout. Orders appear only after successful OTP verification.</p>
+
+        <ul class="login-benefits" aria-label="Account benefits">
+          <li><span class="benefit-icon" aria-hidden="true">✓</span><span>Only successfully paid and confirmed orders are shown.</span></li>
+          <li><span class="benefit-icon" aria-hidden="true">✓</span><span>Check printing, shipping, courier and delivery updates.</span></li>
+          <li><span class="benefit-icon" aria-hidden="true">✓</span><span>Your order details remain protected by mobile OTP verification.</span></li>
+        </ul>
+      </div>
 
       <div>
         <section class="login-panel" aria-label="Mobile OTP login">
@@ -32,7 +42,7 @@
               <svg viewBox="0 0 24 24"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M10 5h4M10 18.5h4"/></svg>
             </span>
             <h2 id="loginTitle">Login with Mobile OTP</h2>
-            <p>Enter your checkout mobile number to access My Orders and Track Order.</p>
+            <p>Enter the mobile number used while placing your RoyalWrap order.</p>
           </div>
 
           <form id="loginForm" class="login-form" novalidate>
@@ -48,7 +58,7 @@
 
             <p class="login-helper">
               <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 10v6M12 7h.01"/></svg>
-              <span>Use the same mobile number that you used while placing the order.</span>
+              <span>Use exactly the same mobile number that was entered during checkout.</span>
             </p>
 
             <div class="otp-stage hidden" id="otpStage">
@@ -70,10 +80,10 @@
 
           <div class="secure-note">
             <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
-            <span>Secure verification. Your OTP should never be shared with anyone.</span>
+            <span>Never share your OTP with anyone.</span>
           </div>
         </section>
-        <p class="login-footer-note">Having trouble logging in? Confirm that the order was placed using this mobile number.</p>
+        <p class="login-footer-note">After OTP verification, you will be redirected automatically to My Orders.</p>
       </div>
     </section>
   </main>
