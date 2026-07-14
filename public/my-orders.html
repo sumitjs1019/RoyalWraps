@@ -6,10 +6,10 @@
   <meta name="theme-color" content="#0b0a08">
   <title>My Orders | RoyalWrap</title>
   <meta name="description" content="View confirmed RoyalWrap orders linked to your verified mobile number.">
-  <link rel="stylesheet" href="customer-orders.css?v=20260714-7">
-  <link rel="stylesheet" href="order-ui-cleanup.css?v=20260714-7">
-  <script src="order-model-cleanup.js?v=20260714-7" defer></script>
-  <script src="customer-orders.js?v=20260714-7" defer></script>
+  <link rel="stylesheet" href="customer-orders.css?v=20260714-8">
+  <link rel="stylesheet" href="order-ui-cleanup.css?v=20260714-8">
+  <script src="order-model-cleanup.js?v=20260714-8" defer></script>
+  <script src="customer-orders.js?v=20260714-8" defer></script>
 </head>
 <body data-order-mode="list">
   <header class="site-header">
@@ -28,11 +28,6 @@
         <a class="active" href="my-orders.html" aria-current="page">My Orders</a>
         <a href="track-order.html">Track Order</a>
       </nav>
-    </section>
-
-    <section class="account-bar account-bar--actions-only" aria-label="Account actions" hidden>
-      <span id="accountMobile" hidden></span>
-      <button class="text-button" id="logoutBtn" type="button" hidden>Logout</button>
     </section>
 
     <section class="orders-toolbar" aria-label="Order filters">
@@ -59,5 +54,10 @@
     <div class="message" id="orderMessage" role="status" aria-live="polite"></div>
     <section class="orders" id="orderResults" aria-label="Your confirmed orders"></section>
   </main>
+
+  <div style="display:none!important" aria-hidden="true">
+    <span id="accountMobile"></span>
+    <button id="logoutBtn" type="button" tabindex="-1"></button>
+  </div>
 </body>
 </html>

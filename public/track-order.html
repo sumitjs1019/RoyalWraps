@@ -6,10 +6,10 @@
   <meta name="theme-color" content="#0b0a08">
   <title>Track Order | RoyalWrap</title>
   <meta name="description" content="Track RoyalWrap shipments linked to your verified mobile number.">
-  <link rel="stylesheet" href="customer-orders.css?v=20260714-7">
-  <link rel="stylesheet" href="order-ui-cleanup.css?v=20260714-7">
-  <script src="order-model-cleanup.js?v=20260714-7" defer></script>
-  <script src="customer-orders.js?v=20260714-7" defer></script>
+  <link rel="stylesheet" href="customer-orders.css?v=20260714-8">
+  <link rel="stylesheet" href="order-ui-cleanup.css?v=20260714-8">
+  <script src="order-model-cleanup.js?v=20260714-8" defer></script>
+  <script src="customer-orders.js?v=20260714-8" defer></script>
 </head>
 <body data-order-mode="track">
   <header class="site-header">
@@ -31,17 +31,6 @@
       </nav>
     </section>
 
-    <section class="account-bar account-bar--actions-only" aria-label="Account actions" hidden>
-      <span id="accountMobile" hidden></span>
-      <div class="account-actions" hidden>
-        <button class="outline-button" id="refreshOrdersBtn" type="button" hidden>
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6v5h-5M4 18v-5h5M6.1 9a7 7 0 0 1 11.3-2.4L20 9M4 15l2.6 2.4A7 7 0 0 0 17.9 15"/></svg>
-          Refresh
-        </button>
-        <button class="text-button" id="logoutBtn" type="button" hidden>Logout</button>
-      </div>
-    </section>
-
     <section class="tracking-intro">
       <div class="tracking-intro-icon" aria-hidden="true">
         <svg viewBox="0 0 24 24"><path d="M3 6h11v10H3zM14 9h4l3 3v4h-7zM7 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm11 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/></svg>
@@ -52,5 +41,10 @@
     <div class="message" id="orderMessage" role="status" aria-live="polite"></div>
     <section class="orders" id="orderResults" aria-label="Shipment tracking"></section>
   </main>
+
+  <div style="display:none!important" aria-hidden="true">
+    <span id="accountMobile"></span>
+    <button id="logoutBtn" type="button" tabindex="-1"></button>
+  </div>
 </body>
 </html>
