@@ -6,13 +6,8 @@
 
   function simplifyMyOrders() {
     results.querySelectorAll('.order-progress').forEach((progress) => progress.remove());
-
-    results.querySelectorAll('.action-button.primary').forEach((button) => {
-      if (button.textContent.trim().toLowerCase() === 'track package') {
-        button.textContent = 'Track Order';
-        button.setAttribute('aria-label', 'Track Order');
-      }
-    });
+    results.querySelectorAll('.product-actions').forEach((actions) => actions.remove());
+    results.querySelectorAll('a[href*="track-order"]').forEach((link) => link.remove());
   }
 
   const observer = new MutationObserver(simplifyMyOrders);
