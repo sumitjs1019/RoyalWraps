@@ -6,11 +6,11 @@
   <meta name="theme-color" content="#0b0a08">
   <title>Track Order | RoyalWrap</title>
   <meta name="description" content="Track RoyalWrap shipments linked to your verified mobile number.">
-  <link rel="stylesheet" href="customer-orders.css?v=20260715-3">
-  <link rel="stylesheet" href="order-ui-cleanup.css?v=20260715-3">
-  <link rel="stylesheet" href="mobile-header-fixes.css?v=20260715-3">
-  <script src="order-model-cleanup.js?v=20260715-3" defer></script>
-  <script src="customer-orders.js?v=20260715-3" defer></script>
+  <link rel="stylesheet" href="customer-orders.css?v=20260715-5">
+  <link rel="stylesheet" href="order-ui-cleanup.css?v=20260715-5">
+  <link rel="stylesheet" href="mobile-header-fixes.css?v=20260715-5">
+  <script src="order-model-cleanup.js?v=20260715-5" defer></script>
+  <script src="customer-orders.js?v=20260715-5" defer></script>
 </head>
 <body data-order-mode="track">
   <header class="site-header">
@@ -24,6 +24,13 @@
   </header>
 
   <main class="shell">
+    <section class="account-heading account-heading--tabs-only">
+      <nav class="order-tabs" aria-label="Order pages">
+        <a href="my-orders.html">My Orders</a>
+        <a class="active" href="track-order.html" aria-current="page">Track Order</a>
+      </nav>
+    </section>
+
     <section class="tracking-intro">
       <div class="tracking-intro-icon" aria-hidden="true">
         <svg viewBox="0 0 24 24"><path d="M3 6h11v10H3zM14 9h4l3 3v4h-7zM7 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm11 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/></svg>

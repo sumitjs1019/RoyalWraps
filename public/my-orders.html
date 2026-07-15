@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0b0a08">
+  <title>My Orders | RoyalWrap</title>
+  <meta name="description" content="View confirmed RoyalWrap orders linked to your verified mobile number.">
+  <link rel="stylesheet" href="customer-orders.css?v=20260715-5">
+  <link rel="stylesheet" href="order-ui-cleanup.css?v=20260715-5">
+  <link rel="stylesheet" href="mobile-header-fixes.css?v=20260715-5">
+  <link rel="stylesheet" href="my-orders-ui.css?v=20260715-5">
+  <script src="order-model-cleanup.js?v=20260715-5" defer></script>
+  <script src="customer-orders.js?v=20260715-5" defer></script>
+  <script src="my-orders-ui.js?v=20260715-5" defer></script>
+</head>
+<body data-order-mode="list">
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="/" aria-label="RoyalWrap home">
+        <img src="assets/royalwraps-logo-icon.png" alt="">
+        <span><strong>RoyalWrap</strong><small>Premium Mobile Skins</small></span>
+      </a>
+      <a class="continue-link" href="/" aria-label="Continue shopping">Continue Shopping <span aria-hidden="true">→</span></a>
+    </div>
+  </header>
+
+  <main class="shell">
+    <section class="account-heading">
+      <nav class="order-tabs" aria-label="Order pages">
+        <a class="active" href="my-orders.html" aria-current="page">My Orders</a>
+        <a href="track-order.html">Track Order</a>
+      </nav>
+    </section>
+
+    <section class="orders-toolbar" aria-label="Order filters">
+      <div>
+        <h2>Order history</h2>
+        <p id="orderCountText">Loading your orders…</p>
+      </div>
+      <div class="toolbar-controls">
+        <label class="search-control">
+          <span class="sr-only">Search confirmed orders</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m21 21-4.35-4.35m2.35-5.65a8 8 0 1 1-16 0 8 8 0 0 1 16 0Z"/></svg>
+          <input id="orderSearch" type="search" placeholder="Search order or product" autocomplete="off">
+        </label>
+        <label class="select-control">
+          <span class="sr-only">Filter confirmed orders</span>
+          <select id="orderFilter">
+            <option value="all">All orders</option>
+            <option value="delivered">Delivered</option>
+          </select>
+        </label>
+      </div>
+    </section>
+
+    <div class="message" id="orderMessage" role="status" aria-live="polite"></div>
+    <section class="orders" id="orderResults" aria-label="Your confirmed orders"></section>
+  </main>
+
+  <div style="display:none!important" aria-hidden="true">
+    <span id="accountMobile"></span>
+    <button id="logoutBtn" type="button" tabindex="-1"></button>
+  </div>
+</body>
+</html>
