@@ -1,0 +1,104 @@
+/* Mobile header refinements shared by the storefront and customer login. */
+
+@media (max-width: 720px) {
+  /* Keep the RoyalWrap subtitle visible on mobile. */
+  .site-header .brand > span:last-child {
+    min-width: 0;
+  }
+
+  .site-header .brand small,
+  .login-page .brand small {
+    display: block !important;
+    margin-top: 1px;
+    color: #bfb5a3;
+    font-size: 0.56rem;
+    line-height: 1.15;
+    letter-spacing: 0.025em;
+    white-space: nowrap;
+  }
+
+  /* Keep the three storefront navigation links compact and centred. */
+  body:not(.login-page) .site-header > .main-nav {
+    display: flex !important;
+    align-items: center;
+    justify-content: center !important;
+    gap: 8px !important;
+    width: 100%;
+    padding: 8px 8px 0 !important;
+  }
+
+  body:not(.login-page) .site-header > .main-nav a {
+    flex: 0 1 auto;
+    min-width: 76px;
+    padding: 8px 10px !important;
+    text-align: center;
+  }
+
+  /* Give the login header enough room for both brand lines. */
+  .login-page .header-inner {
+    gap: 12px;
+  }
+
+  .login-page .brand {
+    min-width: 0;
+    gap: 9px;
+  }
+
+  .login-page .brand strong {
+    font-size: 17px;
+    line-height: 1.05;
+  }
+
+  .login-page .continue-link {
+    flex: 0 0 auto;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 420px) {
+  .site-header .brand small,
+  .login-page .brand small {
+    font-size: 0.52rem;
+  }
+
+  body:not(.login-page) .site-header > .main-nav {
+    gap: 4px !important;
+    padding-inline: 4px !important;
+  }
+
+  body:not(.login-page) .site-header > .main-nav a {
+    min-width: 68px;
+    padding-inline: 8px !important;
+    font-size: 0.78rem !important;
+  }
+
+  .login-page .brand img {
+    width: 39px;
+    height: 39px;
+  }
+
+  .login-page .brand strong {
+    font-size: 16px;
+  }
+
+  .login-page .continue-link {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 350px) {
+  .site-header .brand small,
+  .login-page .brand small {
+    font-size: 0.48rem;
+  }
+
+  body:not(.login-page) .site-header > .main-nav a {
+    min-width: 62px;
+    padding-inline: 6px !important;
+    font-size: 0.74rem !important;
+  }
+
+  .login-page .continue-link {
+    font-size: 10px;
+  }
+}
