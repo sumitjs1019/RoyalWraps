@@ -11,20 +11,21 @@
     return paymentBox?.querySelector('strong')?.textContent.trim() || 'Not available';
   }
 
+  function createPaymentModeNote(paymentMethod) {
+    const note = document.createElement('div');
+    note.className = 'delivery-note payment-mode-note';
+    note.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M3 10h18M7 15h4"></path></svg><span></span>';
+    note.querySelector('span').textContent = `Payment mode: ${paymentMethod}`;
+    return note;
+  }
+
   function showPaymentMode(card) {
     const details = card.querySelector('.order-details');
     if (!details) return;
 
     const paymentMethod = paymentMethodFromCard(card);
-    card.querySelectorAll('.delivery-note').forEach((note) => {
-      const icon = note.querySelector('svg');
-      const text = note.querySelector('span');
-
-      if (icon) {
-        icon.setAttribute('viewBox', '0 0 24 24');
-        icon.innerHTML = '<rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M3 10h18M7 15h4"></path>';
-      }
-      if (text) text.textContent = `Payment mode: ${paymentMethod}`;
+    card.querySelectorAll('.delivery-note:not(.payment-mode-note)').forEach((addressNote) => {
+      addressNote.insertAdjacentElement('afterend', createPaymentModeNote(paymentMethod));
     });
 
     details.remove();
