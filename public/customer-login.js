@@ -9,7 +9,7 @@
   const messageEl = document.getElementById('loginMessage');
   if (!form || !mobileInput || !otpInput || !otpStage || !sendOtpBtn || !verifyOtpBtn || !resendOtpBtn || !messageEl) return;
 
-  const allowedReturns = new Set(['/my-orders.html', '/track-order.html']);
+  const allowedReturns = new Set(['/my-orders.html']);
   const requestedReturn = new URLSearchParams(location.search).get('return');
   const returnPath = allowedReturns.has(requestedReturn) ? requestedReturn : '/my-orders.html';
   let sentMobile = '';
