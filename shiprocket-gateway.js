@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { createPrepaidOrder, configured } = require('./shiprocket-service');
+const { createPaymentVerifiedSessionCookie } = require('./customer-payment-session');
 const {
   handleCustomerOtpSend,
   handleCustomerOtpVerify,
@@ -33,12 +34,13 @@ function admin(req) {
   return adminKey.length >= 8 && safe(req.headers['x-admin-key'], adminKey);
 }
 
-function send(res, status, payload) {
+function send(res, status, payload, extraHeaders = {}) {
   const responseBody = JSON.stringify(payload);
   res.writeHead(status, {
     'Content-Type': 'application/json; charset=utf-8',
     'Content-Length': Buffer.byteLength(responseBody),
-    'Cache-Control': 'no-store'
+    'Cache-Control': 'no-store',
+    ...extraHeaders
   });
   res.end(responseBody);
 }
@@ -225,7 +227,23 @@ async function verify(req, res) {
     const orderId = data.orderId || request.razorpay_order_id;
     const paymentId = data.paymentId || request.razorpay_payment_id;
     data.shiprocket = await sync(orderId, paymentId);
-    return send(res, result.status, data);
+
+    let sessionCookie = '';
+    try {
+      const pending = read(pendingFile, {})[orderId] || {};
+      sessionCookie = createPaymentVerifiedSessionCookie(req, pending.customer?.mobile);
+      data.customerAuthenticated = Boolean(sessionCookie);
+    } catch (error) {
+      data.customerAuthenticated = false;
+      console.error('Automatic customer login failed:', error.message);
+    }
+
+    return send(
+      res,
+      result.status,
+      data,
+      sessionCookie ? { 'Set-Cookie': sessionCookie } : {}
+    );
   }
   res.writeHead(result.status, result.headers);
   res.end(result.body);
