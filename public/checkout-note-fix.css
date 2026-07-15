@@ -3,3 +3,9 @@
   margin: 14px 0 0;
   text-align: center;
 }
+
+#checkoutStatus.form-note::after {
+  content: "Delivery Expected: 4 to 7 days";
+  display: block;
+  margin-top: 6px;
+}
