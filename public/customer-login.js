@@ -9,9 +9,9 @@
   const messageEl = document.getElementById('loginMessage');
   if (!form || !mobileInput || !otpInput || !otpStage || !sendOtpBtn || !verifyOtpBtn || !resendOtpBtn || !messageEl) return;
 
-  const allowedReturns = new Set(['/my-orders.html', '/track-order.html']);
+  const allowedReturns = new Set(['/track-order.html']);
   const requestedReturn = new URLSearchParams(location.search).get('return');
-  const returnPath = allowedReturns.has(requestedReturn) ? requestedReturn : '/my-orders.html';
+  const returnPath = allowedReturns.has(requestedReturn) ? requestedReturn : '/track-order.html';
   let sentMobile = '';
   let cooldownTimer = null;
 
@@ -104,7 +104,7 @@
     setMessage('Verifying OTP and signing you in...');
     try {
       await postJson('/api/customer/auth/verify-otp', { mobile, code });
-      setMessage('Login successful. Opening your account...', 'success');
+      setMessage('Login successful. Opening order tracking...', 'success');
       location.replace(returnPath);
     } catch (error) {
       setMessage(error.message, 'error');
