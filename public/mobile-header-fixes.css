@@ -1,4 +1,4 @@
-/* Mobile header refinements shared by the storefront and customer login. */
+/* Mobile header refinements shared by storefront, login and order pages. */
 
 @media (max-width: 720px) {
   /* Keep the RoyalWrap subtitle visible on mobile. */
@@ -7,7 +7,8 @@
   }
 
   .site-header .brand small,
-  .login-page .brand small {
+  .login-page .brand small,
+  body[data-order-mode] .brand small {
     display: block !important;
     margin-top: 1px;
     color: #bfb5a3;
@@ -18,7 +19,7 @@
   }
 
   /* Keep the three storefront navigation links compact and centred. */
-  body:not(.login-page) .site-header > .main-nav {
+  body:not(.login-page):not([data-order-mode]) .site-header > .main-nav {
     display: flex !important;
     align-items: center;
     justify-content: center !important;
@@ -27,78 +28,102 @@
     padding: 8px 8px 0 !important;
   }
 
-  body:not(.login-page) .site-header > .main-nav a {
+  body:not(.login-page):not([data-order-mode]) .site-header > .main-nav a {
     flex: 0 1 auto;
     min-width: 76px;
     padding: 8px 10px !important;
     text-align: center;
   }
 
-  /* Give the login header enough room for both brand lines. */
-  .login-page .header-inner {
-    gap: 12px;
+  /* Give login and order headers enough room for both brand lines. */
+  .login-page .header-inner,
+  body[data-order-mode] .header-inner {
+    width: calc(100% - 22px);
+    gap: 10px;
   }
 
-  .login-page .brand {
+  .login-page .brand,
+  body[data-order-mode] .brand {
     min-width: 0;
     gap: 9px;
   }
 
-  .login-page .brand strong {
+  .login-page .brand strong,
+  body[data-order-mode] .brand strong {
     font-size: 17px;
     line-height: 1.05;
   }
 
-  .login-page .continue-link {
+  .login-page .continue-link,
+  body[data-order-mode] .continue-link {
+    display: inline-flex !important;
+    align-items: center;
     flex: 0 0 auto;
+    gap: 4px;
     font-size: 12px;
+    white-space: nowrap;
+    overflow: visible;
+  }
+
+  .login-page .continue-link span,
+  body[data-order-mode] .continue-link span {
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    flex: 0 0 auto;
   }
 }
 
 @media (max-width: 420px) {
   .site-header .brand small,
-  .login-page .brand small {
+  .login-page .brand small,
+  body[data-order-mode] .brand small {
     font-size: 0.52rem;
   }
 
-  body:not(.login-page) .site-header > .main-nav {
+  body:not(.login-page):not([data-order-mode]) .site-header > .main-nav {
     gap: 4px !important;
     padding-inline: 4px !important;
   }
 
-  body:not(.login-page) .site-header > .main-nav a {
+  body:not(.login-page):not([data-order-mode]) .site-header > .main-nav a {
     min-width: 68px;
     padding-inline: 8px !important;
     font-size: 0.78rem !important;
   }
 
-  .login-page .brand img {
+  .login-page .brand img,
+  body[data-order-mode] .brand img {
     width: 39px;
     height: 39px;
   }
 
-  .login-page .brand strong {
+  .login-page .brand strong,
+  body[data-order-mode] .brand strong {
     font-size: 16px;
   }
 
-  .login-page .continue-link {
+  .login-page .continue-link,
+  body[data-order-mode] .continue-link {
     font-size: 11px;
   }
 }
 
 @media (max-width: 350px) {
   .site-header .brand small,
-  .login-page .brand small {
+  .login-page .brand small,
+  body[data-order-mode] .brand small {
     font-size: 0.48rem;
   }
 
-  body:not(.login-page) .site-header > .main-nav a {
+  body:not(.login-page):not([data-order-mode]) .site-header > .main-nav a {
     min-width: 62px;
     padding-inline: 6px !important;
     font-size: 0.74rem !important;
   }
 
-  .login-page .continue-link {
+  .login-page .continue-link,
+  body[data-order-mode] .continue-link {
     font-size: 10px;
   }
 }
