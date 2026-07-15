@@ -3,11 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Track RoyalWrap Order</title>
+  <title>RoyalWrap Orders</title>
   <meta name="robots" content="noindex">
-  <script>location.replace('/track-order.html');</script>
+  <script>
+    const target = location.hash === '#track-order' ? '/track-order.html' : '/my-orders.html';
+    location.replace(target);
+  </script>
 </head>
 <body>
-  <p>Opening order tracking…</p>
+  <p>Opening your order page…</p>
 </body>
 </html>
