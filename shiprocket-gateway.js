@@ -5,12 +5,6 @@ const crypto = require('crypto');
 const { createPrepaidOrder, configured } = require('./shiprocket-service');
 const { createPaymentVerifiedSessionCookie } = require('./customer-payment-session');
 const {
-  handleCheckoutOtpSend,
-  handleCheckoutOtpVerify,
-  handleCheckoutSession,
-  sessionFromRequest: checkoutSessionFromRequest
-} = require('./checkout-auth-service');
-const {
   handleCustomerOtpSend,
   handleCustomerOtpVerify,
   handleCustomerSession,
@@ -210,23 +204,6 @@ async function sync(orderId, paymentId) {
 async function createOrder(req, res) {
   const buffer = await body(req);
   const request = json(buffer);
-  const checkoutSession = checkoutSessionFromRequest(req);
-
-  if (!checkoutSession) {
-    return send(res, 401, {
-      error: 'Please verify your mobile number with OTP before payment.',
-      code: 'CHECKOUT_LOGIN_REQUIRED'
-    });
-  }
-
-  const customerMobile = String(request.customer?.mobile || '').replace(/\D/g, '').slice(-10);
-  if (!customerMobile || customerMobile !== checkoutSession.mobile) {
-    return send(res, 403, {
-      error: 'Checkout mobile number does not match the OTP-verified account.',
-      code: 'CHECKOUT_MOBILE_MISMATCH'
-    });
-  }
-
   const result = await proxyBuffered(req, buffer);
   if (result.status >= 200 && result.status < 300) {
     try {
@@ -296,9 +273,6 @@ http.createServer(async (req, res) => {
   try {
     const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
     if (url.pathname.startsWith('/api/admin/shiprocket/')) return await shiprocketAdmin(req, res, url);
-    if (req.method === 'POST' && url.pathname === '/api/checkout/auth/send-otp') return await handleCheckoutOtpSend(req, res);
-    if (req.method === 'POST' && url.pathname === '/api/checkout/auth/verify-otp') return await handleCheckoutOtpVerify(req, res);
-    if (req.method === 'GET' && url.pathname === '/api/checkout/auth/session') return handleCheckoutSession(req, res);
     if (req.method === 'POST' && ['/api/customer/auth/send-otp', '/api/customer/otp/send'].includes(url.pathname)) return await handleCustomerOtpSend(req, res);
     if (req.method === 'POST' && ['/api/customer/auth/verify-otp', '/api/customer/otp/verify'].includes(url.pathname)) return await handleCustomerOtpVerify(req, res);
     if (req.method === 'GET' && url.pathname === '/api/customer/auth/session') return handleCustomerSession(req, res);
