@@ -1,0 +1,51 @@
+services:
+  # Free Node.js backend. This service may spin down after 15 minutes of inactivity.
+  - type: web
+    name: royalwraps-api-sumitjs1019
+    runtime: node
+    plan: free
+    region: singapore
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeployTrigger: commit
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: RAZORPAY_KEY_ID
+        sync: false
+      - key: RAZORPAY_KEY_SECRET
+        sync: false
+      - key: ADMIN_KEY
+        sync: false
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: TWOFACTOR_API_KEY
+        sync: false
+      - key: CUSTOMER_OTP_SESSION_SECRET
+        generateValue: true
+
+  # Static frontend. Static sites do not use a sleeping Node.js instance.
+  - type: web
+    name: royalwraps-store-sumitjs1019
+    runtime: static
+    buildCommand: echo "RoyalWrap static frontend ready"
+    staticPublishPath: ./public
+    autoDeployTrigger: commit
+    headers:
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
+    routes:
+      # Keep the browser on the frontend domain while Render proxies API calls
+      # to the sleeping backend. The homepage itself never touches the backend.
+      - type: rewrite
+        source: /api/*
+        destination: https://royalwraps-api-sumitjs1019.onrender.com/api/*
