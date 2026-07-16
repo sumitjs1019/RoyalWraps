@@ -6,7 +6,8 @@ services:
     plan: free
     region: singapore
     buildCommand: npm ci
-    startCommand: npm start
+    # Start only the core RoyalWrap store/payment backend. Shiprocket is not used.
+    startCommand: npm run start:store
     healthCheckPath: /api/health
     autoDeployTrigger: commit
     envVars:
