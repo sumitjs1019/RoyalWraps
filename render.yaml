@@ -5,7 +5,8 @@ services:
     runtime: node
     plan: free
     region: singapore
-    buildCommand: npm ci
+    # package-lock.json is currently behind package.json, so use npm install instead of npm ci.
+    buildCommand: npm install
     # Start only the core RoyalWrap store/payment backend. Shiprocket is not used.
     startCommand: npm run start:store
     healthCheckPath: /api/health
