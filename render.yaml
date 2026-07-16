@@ -7,8 +7,8 @@ services:
     region: singapore
     # package-lock.json is currently behind package.json, so use npm install instead of npm ci.
     buildCommand: npm install
-    # Start only the core RoyalWrap store/payment backend. Shiprocket is not used.
-    startCommand: npm run start:store
+    # Start Razorpay, admin and customer OTP/order routes without Shiprocket order creation.
+    startCommand: node -r ./success-route-redirect.js customer-gateway.js
     healthCheckPath: /api/health
     autoDeployTrigger: commit
     envVars:
