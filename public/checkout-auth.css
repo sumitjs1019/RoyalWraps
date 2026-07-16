@@ -39,6 +39,10 @@
   flex-wrap: wrap;
 }
 
+.checkout-otp-stage[hidden] {
+  display: none;
+}
+
 .checkout-otp-stage input {
   flex: 1 1 130px;
   min-width: 0;
