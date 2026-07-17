@@ -1,4 +1,4 @@
-import { handleApiRequest } from '../../_lib/royalwrap-backend.js';
+import { handleApiRequest } from '../_lib/royalwrap-backend.js';
 
 export function onRequest(context) {
   const matchedPath = Array.isArray(context.params.path)
