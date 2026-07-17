@@ -356,7 +356,7 @@ app.post('/api/create-order', async (req, res, next) => {
         customer_mobile: customer.mobile,
         customer_pincode: customer.pincode,
         customer_address: `${customer.address}, PIN: ${customer.pincode}`.slice(0, 250),
-        items: cleanItems.map((item) => `${item.name} (${item.brand} ${item.model}) x ${item.qty}`).join(', ').slice(0, 250)
+        items: cleanItems.map((item) => `${item.name} (${item.model}) x ${item.qty}`).join(', ').slice(0, 250)
       }
     });
 
